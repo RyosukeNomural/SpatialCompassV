@@ -1,6 +1,6 @@
 # SpatialCompassV
+<img width="738" height="289" alt="scomv" src="https://github.com/user-attachments/assets/636006da-884f-4577-8c04-0ae0b718e65e" />
 
-![Uploading スクリーンショット 2025-12-18 13.48.39.png…]()
 
 
 ![PyPI version](https://img.shields.io/pypi/v/scomv.svg)
