@@ -1,5 +1,5 @@
 # SpatialCompassV
-<img width="738" height="289" alt="scomv" src="https://github.com/user-attachments/assets/636006da-884f-4577-8c04-0ae0b718e65e" />
+<img width="370" height="145" alt="scomv" src="https://github.com/user-attachments/assets/636006da-884f-4577-8c04-0ae0b718e65e" />
 
 
 
