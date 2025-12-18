@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-# SpatialCompassV -  cell/gene clustering from a standard region
-
-<img width="369" height="145" alt="スクリーンショット 2025-12-18 13 48 39" src="https://github.com/user-attachments/assets/6e337f80-1825-47bf-98f3-6083202e86e4" />
-=======
 # SpatialCompassV
 
 ![PyPI version](https://img.shields.io/pypi/v/scomv.svg)
