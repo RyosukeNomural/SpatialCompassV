@@ -53,6 +53,8 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
     <td style="vertical-align: top; padding-right: 14px; border: none;">
       A <b>similarity matrix</b> is then constructed, followed by <b>PCoA and clustering</b>,
       to classify spatial distribution patterns.
+
+     The horizontal axis represents distance, and the vertical axis also represents distance. Distances are defined as negative for locations inside the reference region.
     </td>
     <td style="vertical-align: top; width: 300px; border: none;">
       <img width="1491" height="638" alt="PCoA"
