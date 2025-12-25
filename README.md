@@ -22,22 +22,19 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
 
 ### Vector construction from spatial grids
 
-<table>
+<table border="0" style="border-collapse: collapse; border: none;">
   <tr>
-    <td style="vertical-align: top; padding-right: 14px;">
+    <td style="vertical-align: top; padding-right: 14px; border: none;">
       The AnnData object is discretized into spatial grids, and for each grid,
-      the shortest-distance vector to the reference region is computed.<br><br>
-      This vector information is stored for each cell/gene and projected onto a
-      <b>polar coordinate map</b>.<br><br>
-      A <b>similarity matrix</b> is then constructed, followed by
-      <b>PCoA and clustering</b>, to classify spatial distribution patterns.
+      the shortest-distance vector to the reference region is computed.
     </td>
-    <td style="vertical-align: top; width: 180px;">
+    <td style="vertical-align: top; width: 180px; border: none;">
       <img width="160" alt="vector"
            src="https://github.com/user-attachments/assets/4e0b175a-51a7-4397-a04c-ae3f53a68f92" />
     </td>
   </tr>
 </table>
+
 
 
 
