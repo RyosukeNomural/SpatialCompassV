@@ -28,8 +28,8 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
       The AnnData object is discretized into spatial grids, and for each grid,
       the shortest-distance vector to the reference region is computed.
     </td>
-    <td style="vertical-align: top; width: 180px; border: none;">
-      <img width="160" alt="vector"
+    <td style="vertical-align: top; width: 200px; border: none;">
+      <img width="200" alt="vector"
            src="https://github.com/user-attachments/assets/4e0b175a-51a7-4397-a04c-ae3f53a68f92" />
     </td>
   </tr>
