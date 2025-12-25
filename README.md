@@ -31,6 +31,8 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
 
 ### Additional functionality
 - Gene distributions can also be visualized as **3D density maps**, allowing direct comparison of the spatial distributions of two genes.
+![Uploading 3dmap.png…]()
+
 
 
 ## Credits
