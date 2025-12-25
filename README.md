@@ -40,8 +40,8 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
     <td style="vertical-align: top; padding-right: 14px; border: none;">
       This vector information is stored for each cell/gene and projected onto a
       <b>polar coordinate map</b>.
-        
-      The horizontal axis represents distance, and the vertical axis also represents distance. Distances are defined as negative for locations inside the reference region.
+      The horizontal axis represents distance, and the vertical axis also represents distance. 
+      Distances are defined as negative for locations inside the reference region.
     </td>
     <td style="vertical-align: top; width: 200px; border: none;">
         <img width="200" height="200" alt="polar_map" src="https://github.com/user-attachments/assets/aee34cef-994b-427c-8947-9bb25518a353" />
