@@ -42,8 +42,8 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
       <b>polar coordinate map</b>.
     </td>
     <td style="vertical-align: top; width: 200px; border: none;">
-      <img width="1491" height="638" alt="polar-map"
-        src="https://github.com/user-attachments/assets/860a60c9-6cf8-425c-a824-f5c9664c8654" />
+          <img width="690" height="661" alt="polar_map" src="https://github.com/user-attachments/assets/aee34cef-994b-427c-8947-9bb25518a353" />
+
     </td>
   </tr>
 </table>
@@ -56,8 +56,8 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
       to classify spatial distribution patterns.
     </td>
     <td style="vertical-align: top; width: 300px; border: none;">
-      <img height="250" " alt="PCoA"
-           src="https://github.com/user-attachments/assets/1692bbc4-a7bf-4915-b5d6-ff31fc236410" />
+      <img width="1491" height="638" alt="PCoA"
+        src="https://github.com/user-attachments/assets/860a60c9-6cf8-425c-a824-f5c9664c8654" />
     </td>
   </tr>
 </table>
