@@ -41,8 +41,8 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
       This vector information is stored for each cell/gene and projected onto a
       <b>polar coordinate map</b>.
     </td>
-    <td style="vertical-align: top; width: 180px; border: none;">
-      <img width="160" alt="polar-map"
+    <td style="vertical-align: top; width: 200px; border: none;">
+      <img width="260" alt="polar-map"
          src="https://github.com/user-attachments/assets/6e878978-77f2-4acd-a4ba-6a27f66e49bd" />
     </td>
   </tr>
