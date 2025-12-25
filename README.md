@@ -12,10 +12,26 @@ Spatial omics analysis tools for cell/gene clustering from a astandard region
 * Free software: MIT License
 * Documentation: https://scomv.readthedocs.io.
 
-## Features
 
-* 
-* TODO
+## Overview of the SpatialCompassV (SCOMV) Workflow
+
+The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
+
+- **Extraction of a reference region**  
+  A reference region (e.g., a tumor region) is identified using the **SpatialKnifeY (SKNY)** algorithm.
+
+- **Vector construction from spatial grids**  
+  The AnnData object is discretized into spatial grids, and for each grid, the shortest-distance vector to the reference region is computed.  
+  - This vector information is stored for each cell/gene and projected onto a **polar coordinate map**.  
+  - A **similarity matrix** is then constructed, followed by **PCoA and clustering**, to classify spatial distribution patterns.
+
+- **Integration across multiple fields of view**  
+  By integrating results from multiple regions of interest, clustering of the reference region itself (e.g., tumor malignancy states) can be performed.  
+  - Gene-wise contributions are calculated using **PCA**, enabling the identification of **spatially differentially expressed genes (Spatial DEGs)**.
+
+### Additional functionality
+- Gene distributions can also be visualized as **3D density maps**, allowing direct comparison of the spatial distributions of two genes.
+
 
 ## Credits
 
