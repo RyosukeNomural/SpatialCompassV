@@ -55,8 +55,8 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
       A <b>similarity matrix</b> is then constructed, followed by <b>PCoA and clustering</b>,
       to classify spatial distribution patterns.
     </td>
-    <td style="vertical-align: top; width: 220px; border: none;">
-      <img width="350" alt="PCoA"
+    <td style="vertical-align: top; width: 300px; border: none;">
+      <img height="250" " alt="PCoA"
            src="https://github.com/user-attachments/assets/1692bbc4-a7bf-4915-b5d6-ff31fc236410" />
     </td>
   </tr>
