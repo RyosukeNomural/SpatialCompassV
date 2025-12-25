@@ -21,11 +21,13 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
   A reference region (e.g., a tumor region) is identified using the **[SpatialKnifeY (SKNY)](https://github.com/shusakai/skny)** algorithm.
 
 - **Vector construction from spatial grids**
-- <img width="132" height="130" alt="vector" src="https://github.com/user-attachments/assets/4e0b175a-51a7-4397-a04c-ae3f53a68f92" />
 
-  The AnnData object is discretized into spatial grids, and for each grid, the shortest-distance vector to the reference region is computed.  
-  - This vector information is stored for each cell/gene and projected onto a **polar coordinate map**.  
-  - A **similarity matrix** is then constructed, followed by **PCoA and clustering**, to classify spatial distribution patterns.
+<img align="right" width="160" alt="vector" src="https://github.com/user-attachments/assets/4e0b175a-51a7-4397-a04c-a-ae3f53a68f92" />
+
+The AnnData object is discretized into spatial grids, and for each grid, the shortest-distance vector to the reference region is computed.  
+- This vector information is stored for each cell/gene and projected onto a **polar coordinate map**.  
+- A **similarity matrix** is then constructed, followed by **PCoA and clustering**, to classify spatial distribution patterns.
+
 
 - **Integration across multiple fields of view**  
   By integrating results from multiple regions of interest, clustering of the reference region itself (e.g., tumor malignancy states) can be performed.  
