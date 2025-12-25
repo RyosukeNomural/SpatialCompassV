@@ -18,7 +18,7 @@ Spatial omics analysis tools for cell/gene clustering from a astandard region
 The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
 
 - **Extraction of a reference region**  
-  A reference region (e.g., a tumor region) is identified using the **SpatialKnifeY (SKNY)** algorithm.
+  A reference region (e.g., a tumor region) is identified using the **[SpatialKnifeY (SKNY)](https://github.com/shusakai/skny)** algorithm.
 
 - **Vector construction from spatial grids**  
   The AnnData object is discretized into spatial grids, and for each grid, the shortest-distance vector to the reference region is computed.  
