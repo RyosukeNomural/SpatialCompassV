@@ -49,6 +49,18 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
 </table>
 
 
+<table border="0" style="border-collapse: collapse; border: none;">
+  <tr>
+    <td style="vertical-align: top; padding-right: 14px; border: none;">
+      A **similarity matrix** is then constructed, followed by **PCoA and clustering**, to classify spatial distribution patterns.
+    </td>
+    <td style="vertical-align: top; width: 200px; border: none;">
+
+      <img width="350" alt="polar-map"
+         src="https://github.com/user-attachments/assets/1692bbc4-a7bf-4915-b5d6-ff31fc236410" />
+    </td>
+  </tr>
+</table>
 
 
 - **Integration across multiple fields of view**  
