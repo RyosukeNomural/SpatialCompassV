@@ -8,12 +8,6 @@
     width: 22rem;           /* default is ~15-18rem */
   }
 
-  /* Keep the main content aligned after widening the sidebar */
-  .md-main__inner {
-    margin-left: 22rem;
-  }
-}
-
 /* Make the logo area feel more like a sidebar header */
 .md-nav__title {
   padding-top: 1rem;
