@@ -11,7 +11,7 @@ Spatial omics analysis tools for cell/gene clustering from a astandard region
 
 * PyPI package: https://pypi.org/project/scomv/
 * Free software: MIT License
-* Documentation: https://scomv.readthedocs.io.
+* Documentation: https://spatialcompassv.readthedocs.io/en/latest/
 
 
 ## Overview of the SpatialCompassV (SCOMV) Workflow
