@@ -10,7 +10,17 @@
 
 /* ---- Header (top bar) ---- */
 .md-header {
-  background-color: #3f51b5; /* Indigo */
+	display: none;
+}
+
+/* Remove the offset reserved for the header */
+.md-container {
+  padding-top: 0;
+}
+
+/* Hide the right-side secondary sidebar (TOC) completely */
+.md-sidebar--secondary {
+  display: none;
 }
 
 /* ---- Override Material dark scheme variables ---- */
