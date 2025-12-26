@@ -4,7 +4,8 @@
 
 
 ![PyPI version](https://img.shields.io/pypi/v/scomv.svg)
-[![Documentation Status](https://RyosukeNomural.github.io/SpatialCompassV/)](https://RyosukeNomural.github.io/SpatialCompassV/)
+[![Documentation Status][![Documentation Status](https://readthedocs.org/projects/spatialcompassv/badge/?version=latest)](https://spatialcompassv.readthedocs.io/en/latest/?badge=latest)
+
 
 Spatial omics analysis tools for cell/gene clustering from a astandard region
 
