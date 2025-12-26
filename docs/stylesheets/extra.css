@@ -1,40 +1,42 @@
 /* =========================================================
-   Color scheme: dark sidebar + light main content
+   Dark sidebar + light main content (force override)
    ========================================================= */
 
-/* Sidebar background (dark blue) */
-.md-sidebar {
-  background-color: #1e2a3a;
-}
-
-/* Sidebar inner scroll area */
+/* ---- Sidebar (keep dark blue) ---- */
+.md-sidebar,
 .md-sidebar__scrollwrap {
   background-color: #1e2a3a;
 }
 
-/* Header (top bar) background */
+/* ---- Header (top bar) ---- */
 .md-header {
   background-color: #3f51b5; /* Indigo */
 }
 
-/* Main content background (white) */
+/* ---- Override Material dark scheme variables ---- */
+[data-md-color-scheme="slate"] {
+  --md-default-bg-color: #ffffff;        /* Main page background */
+  --md-default-fg-color: #1f2933;        /* Main text color */
+  --md-default-fg-color--light: #4b5563;
+  --md-typeset-color: #1f2933;
+}
+
+/* ---- Main content area ---- */
 .md-main {
   background-color: #ffffff;
 }
 
-/* Page content area */
-.md-content {
+.md-main__inner {
   background-color: #ffffff;
 }
 
-/* Text color in main content */
-.md-content,
-.md-content p,
-.md-content li {
-  color: #1f2933; /* Dark gray for readability */
+/* ---- Page content ---- */
+.md-content {
+  background-color: #ffffff;
+  color: #1f2933;
 }
 
-/* Headings in main content */
+/* ---- Headings ---- */
 .md-content h1,
 .md-content h2,
 .md-content h3,
@@ -42,7 +44,7 @@
   color: #111827;
 }
 
-/* Right-side table of contents (if visible) */
+/* ---- Right-side TOC (if enabled) ---- */
 .md-sidebar--secondary {
   background-color: #ffffff;
 }
