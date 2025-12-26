@@ -2,6 +2,24 @@
    Dark sidebar + light main content (force override)
    ========================================================= */
 
+/* Increase the width of the primary (left) sidebar */
+@media (min-width: 1220px) {
+  .md-sidebar--primary {
+    width: 22rem;           /* default is ~15-18rem */
+  }
+
+  /* Keep the main content aligned after widening the sidebar */
+  .md-main__inner {
+    margin-left: 22rem;
+  }
+}
+
+/* Make the logo area feel more like a sidebar header */
+.md-nav__title {
+  padding-top: 1rem;
+  padding-bottom: 0.75rem;
+}
+
 /* ---- Sidebar (keep dark blue) ---- */
 .md-sidebar,
 .md-sidebar__scrollwrap {
