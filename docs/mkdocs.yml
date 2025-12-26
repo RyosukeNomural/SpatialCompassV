@@ -1,0 +1,17 @@
+isite_name: SpatialCompassV(SCOMV)
+site_description: SpatialCompassV(SCOMV)
+site_author: Ryosuke Nomura
+
+theme:
+  name: material
+  language: ja
+  features:
+    - navigation.tabs
+    - navigation.expand
+    - toc.integrate
+
+nav:
+  - Home: index.md
+  - Installation: installation.md
+  - Usage: usage.md
+
