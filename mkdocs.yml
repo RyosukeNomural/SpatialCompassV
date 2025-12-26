@@ -1,14 +1,22 @@
-site_name: SpatialCompassV(SCOMV)
+isite_name: SpatialCompassV(SCOMV)
 site_description: SpatialCompassV(SCOMV)
 site_author: Ryosuke Nomura
 
 theme:
   name: material
-  language: ja
+  language: en
   features:
-    - navigation.tabs
     - navigation.expand
-    - toc.integrate
+    - navigation.sections
+    - navigation.instant
+  palette:
+    - scheme: slate
+      primary: indigo
+      accent: cyan
+
+extra_css:
+  - stylesheets/extra.css
+
 
 nav:
   - Home: index.md

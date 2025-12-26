@@ -1,0 +1,15 @@
+/* Sidebar background color (dark blue instead of near-black) */
+.md-sidebar {
+  background-color: #1e2a3a;  /* Deep navy blue */
+}
+
+/* Main content background color for dark mode */
+[data-md-color-scheme="slate"] {
+  --md-default-bg-color: #1b2533;  /* Slightly lighter blue background */
+}
+
+/* Optional: emphasize section headers in the sidebar (e.g., GENERAL, GALLERY) */
+.md-nav__title {
+  color: #ffd54f;  /* Soft yellow accent similar to squidpy */
+}
+
