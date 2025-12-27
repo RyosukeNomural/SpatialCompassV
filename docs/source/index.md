@@ -17,8 +17,17 @@ By integrating information across multiple fields of view, SCOMV further identif
 - [Contributing](contributing.md)
 - [History](history.md)
 
-## Indices and tables
+.. toctree::
+    :caption: General
+    :maxdepth: 2
+    :hidden:
 
-- [Index](genindex)
-- [Module Index](modindex)
-- [Search](search)
+    installation
+    api
+    
+.. toctree::
+    :caption: Gallery
+    :maxdepth: 2
+    :hidden:
+
+    tutorials/index
