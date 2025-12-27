@@ -4,10 +4,8 @@
 
 It represents the spatial distribution patterns of cells and genes relative to a user-defined reference region (e.g., tumor regions) using vector-based features derived from their spatial relationships.Reference regions are delineated using [SpatialKnifeY (SKNY)](https://skny.readthedocs.io/).
 
-
 By integrating information across multiple fields of view, SCOMV further identifies spatially differential genes (spatial DEGs) that exhibit region-specific spatial reorganization beyond conventional differential expression analysis.
 
-It builds on top of [scanpy](https://scanpy.readthedocs.io/en/stable/) and [anndata](https://anndata.readthedocs.io/en/stable/), from which it inherits modularity and scalability.
 
 
 ## Contents
