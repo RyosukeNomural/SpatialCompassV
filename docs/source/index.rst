@@ -1,17 +1,30 @@
-.. SpatialCompassV documentation master file, created by
-   sphinx-quickstart on Fri Dec 26 17:54:13 2025.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+SpatialCompassV (SCOMV)
+======================
 
-SpatialCompassV documentation
-=============================
+**SCOMV** is a computational framework for the analysis and visualization of spatial transcriptomics data.
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
+It represents the spatial distribution patterns of cells and genes relative to a user-defined reference region
+(e.g., tumor regions) using vector-based features derived from their spatial relationships.
+Reference regions are delineated using SpatialKnifeY (SKNY).
+
+By integrating information across multiple fields of view, SCOMV further identifies spatially differential genes
+(spatial DEGs) that exhibit region-specific spatial reorganization beyond conventional differential expression analysis.
 
 
 .. toctree::
+   :caption: General
    :maxdepth: 2
-   :caption: Contents:
+   :hidden:
+
+   installation
+   usage
+   api/index
+
+
+.. toctree::
+   :caption: Gallery
+   :maxdepth: 2
+   :hidden:
+
+   tutorials/index
 
