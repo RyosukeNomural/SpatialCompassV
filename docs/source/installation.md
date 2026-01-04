@@ -4,11 +4,6 @@
 
 To install SpatialCompassV, run this command in your terminal:
 
-```sh
-uv add scomv
-```
-
-Or if you prefer to use `pip`:
 
 ```sh
 pip install scomv
