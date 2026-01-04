@@ -10,21 +10,13 @@ Reference regions are delineated using SpatialKnifeY (SKNY).
 By integrating information across multiple fields of view, SCOMV further identifies spatially differential genes
 (spatial DEGs) that exhibit region-specific spatial reorganization beyond conventional differential expression analysis.
 
-
 .. toctree::
-   :caption: General
-   :maxdepth: 2
+   :maxdepth: 1
    :hidden:
+
 
    installation
-   usage
-   api/index
-
-
-.. toctree::
-   :caption: Gallery
-   :maxdepth: 2
-   :hidden:
-
-   tutorials/index
-
+   api
+   tutorials
+   interactive
+   references
