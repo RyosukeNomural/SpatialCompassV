@@ -11,12 +11,11 @@ By integrating information across multiple fields of view, SCOMV further identif
 (spatial DEGs) that exhibit region-specific spatial reorganization beyond conventional differential expression analysis.
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    :hidden:
 
 
    installation
    api
-   /test/tutorials
-   interactive
+   tutorials
    references
