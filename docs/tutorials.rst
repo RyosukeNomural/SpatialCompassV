@@ -11,27 +11,27 @@ Main Features
       :link: tutorials/cell_analysis
       :text-align: center
 
-      .. image:: _static/images/tutorials/logo.png
+      .. image:: _static/images/logo.png
          :width: 220px
 
-      **Cell-Cell Interaction Analysis**
+      **Cell Distribution Clustering**
 
    .. grid-item-card::
       :link: tutorials/gene_analysis
       :text-align: center
 
-      .. image:: _static/images/tutorials/logo.png
+      .. image:: _static/images/logo.png
          :width: 220px
 
-      **Cell-Cell Interaction with Xenium Data**
+      **Gene Distribution Clustering**
 
    .. grid-item-card::
       :link: tutorials/spatial_deg
       :text-align: center
 
-      .. image:: _static/images/tutorials/logo.png
+      .. image:: _static/images/logo.png
          :width: 220px
 
-      **Pseudotime Spatial Trajectory Inference**
+      **Region Clustering and Spatial DEG analysis**
 
  
