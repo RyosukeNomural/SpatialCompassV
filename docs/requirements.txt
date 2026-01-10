@@ -1,5 +1,5 @@
 nbsphinx
-sphinx-nbgallery
+nbgallery
 myst-parser
 sphinx-rtd-theme
 
