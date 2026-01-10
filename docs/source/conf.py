@@ -10,6 +10,7 @@ project = 'SpatialCompassV'
 copyright = '2025, Ryosuke Nomura'
 author = 'Ryosuke Nomura'
 release = '0.1.0'
+html_logo = "images/logo.png"
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
