@@ -1,0 +1,6 @@
+/* Sidebar background (RTD theme) */
+.wy-side-scroll,
+.wy-nav-side {
+  background-color: #f7f9fb;  /* やや色のある白 */
+}
+
