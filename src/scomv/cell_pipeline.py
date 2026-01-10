@@ -17,9 +17,9 @@ class CellPolarPipeline:
     """
     A pipeline that takes a cell-level table (x, y, Cluster) and a min_vector_df
     (indexed by grid coordinates), then performs:
-      - cluster-wise polar distributions
-      - inter-cluster distance computation
-      - PCoA / heatmap visualization
+    - cluster-wise polar distributions
+    - inter-cluster distance computation
+    - PCoA / heatmap visualization
     """
 
     cell_df: pd.DataFrame
