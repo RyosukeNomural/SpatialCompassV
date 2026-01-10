@@ -21,7 +21,6 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'nbsphinx',
-    'nbgallery',
     'myst_parser',
     'myst_parser.ext.autodoc',
 ]
