@@ -13,8 +13,8 @@ import skbio
 from skbio.stats.ordination import pcoa
 import plotly.express as px
 
-from preparation.choose_roi import extract_roi, contour_regions
-from preparation.scomv_calc_vector import compute_min_vectors_polar
+from .preparation.choose_roi import extract_roi, contour_regions
+from .preparation.scomv_calc_vector import compute_min_vectors_polar
 
 
 # =========================================================

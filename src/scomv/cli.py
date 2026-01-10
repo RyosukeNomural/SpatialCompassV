@@ -2,11 +2,15 @@
 
 import typer
 from rich.console import Console
-
+import scomv
 from scomv import utils
 
 app = typer.Typer()
 console = Console()
+@app.command()
+def version():
+    """Show scomv version."""
+    print(scomv.__version__)
 
 
 @app.command()
