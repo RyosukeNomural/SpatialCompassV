@@ -16,16 +16,16 @@ html_logo = "images/logo.png"
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
 extensions = [
-    'myst_parser'
     'sphinx.ext.autodoc',
     'sphinx.ext.autosummary',
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'nbsphinx',
     'nbgallery',
+    'myst_parser',
+    'myst_parser.ext.autodoc',
 ]
 
-templates_path = ['_templates']
 exclude_patterns = []
 
 
