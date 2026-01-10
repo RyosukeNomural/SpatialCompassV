@@ -3,6 +3,9 @@ pandas
 matplotlib
 seaborn
 scikit-bio
+scikit-learn
+scipy
+
 sphinx
 nbsphinx
 myst-parser
