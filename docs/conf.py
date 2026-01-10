@@ -22,6 +22,7 @@ extensions = [
     'sphinx.ext.napoleon',
     'nbsphinx',
     'myst_parser',
+    'sphinx_design',
 ]
 
 exclude_patterns = []
