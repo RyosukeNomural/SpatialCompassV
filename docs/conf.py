@@ -40,4 +40,8 @@ nbsphinx_thumbnails = {
     "tutorials/cell_analysis": "_static/images/logo.png",
     "tutorials/gene_analysis": "_static/images/logo.png",
     "tutorials/spatial_deg": "_static/images/logo.png",
+
+
+def setup(app):
+    app.add_css_file("css/custom.css")
 }
