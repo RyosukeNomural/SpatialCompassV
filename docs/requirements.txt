@@ -1,3 +1,7 @@
+numpy
+pandas
+matplotlib
+seaborn
 nbsphinx
 myst-parser
 sphinx-rtd-theme
