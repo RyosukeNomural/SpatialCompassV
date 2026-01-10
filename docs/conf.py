@@ -55,5 +55,6 @@ autodoc_mock_imports = [
     "anndata",
     "squidpy",
     "stlearn",
+    "plotly",
 ]
 
