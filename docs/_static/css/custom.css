@@ -1,6 +1,35 @@
-/* Sidebar background (RTD theme) */
-.wy-side-scroll,
+/* ===== RTD Sidebar background override ===== */
+
+/* サイドバー全体 */
 .wy-nav-side {
-  background-color: #f7f9fb;  /* やや色のある白 */
+  background-color: #f7f9fb !important;
+}
+
+/* ロゴ＋検索バー部分（ここが青かった） */
+.wy-side-nav-search {
+  background-color: #f2f5f9 !important;
+  border-bottom: 1px solid #e1e4e8;
+}
+
+/* サイドバーのスクロール部分 */
+.wy-side-scroll {
+  background-color: #f7f9fb !important;
+}
+
+/* サイドバーのリンク文字色 */
+.wy-menu-vertical a {
+  color: #2c3e50;
+}
+
+/* アクティブ項目 */
+.wy-menu-vertical li.current > a {
+  background-color: #e6eef8 !important;
+  color: #1f6fd6 !important;
+  border-right: 4px solid #1f6fd6;
+}
+
+/* ホバー時 */
+.wy-menu-vertical a:hover {
+  background-color: #edf3fb;
 }
 
