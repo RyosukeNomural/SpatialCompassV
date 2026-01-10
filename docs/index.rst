@@ -1,5 +1,5 @@
 SpatialCompassV (SCOMV)
-======================
+========================
 
 **SCOMV** is a computational framework for the analysis and visualization of spatial transcriptomics data.
 
