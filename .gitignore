@@ -218,3 +218,6 @@ __marimo__/
 *.zarr
 *.zip
 
+# Dataset outputs
+src/scomv/dataset/outs/
+

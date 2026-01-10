@@ -1,4 +1,5 @@
-sphinx
-sphinx-rtd-theme
+nbsphinx
+sphinx-nbgallery
 myst-parser
+sphinx-rtd-theme
 
