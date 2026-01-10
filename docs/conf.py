@@ -24,6 +24,7 @@ extensions = [
     'myst_parser',
     'sphinx_design',
 ]
+autosummary_generate = True
 
 exclude_patterns = []
 
@@ -44,4 +45,8 @@ nbsphinx_thumbnails = {
 
 def setup(app):
     app.add_css_file("css/custom.css")
+
+import os
+import sys
+sys.path.insert(0, os.path.abspath("../src"))
 
