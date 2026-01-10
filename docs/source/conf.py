@@ -35,3 +35,9 @@ exclude_patterns = []
 
 html_theme = "sphinx_rtd_theme"
 html_static_path = ['_static']
+
+nbsphinx_thumbnails = {
+    "tutorials/cell_analysis": "_static/images/logo.png",
+    "tutorials/gene_analysis": "_static/images/logo.png",
+    "tutorials/spatial_deg": "_static/images/logo.png",
+}
