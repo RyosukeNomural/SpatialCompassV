@@ -11,7 +11,7 @@ Main Features
       :link: tutorials/cell_analysis
       :text-align: center
 
-      .. image:: _static/images/logo.png
+      .. image:: _static/images/cell_analysis.png
          :width: 220px
 
       **Cell Distribution Clustering**
@@ -20,7 +20,7 @@ Main Features
       :link: tutorials/gene_analysis
       :text-align: center
 
-      .. image:: _static/images/logo.png
+      .. image:: _static/images/gene_analysis.png
          :width: 220px
 
       **Gene Distribution Clustering**
@@ -29,7 +29,7 @@ Main Features
       :link: tutorials/spatial_deg
       :text-align: center
 
-      .. image:: _static/images/logo.png
+      .. image:: _static/images/spatial_deg.png
          :width: 220px
 
       **Region Clustering and Spatial DEG analysis**
