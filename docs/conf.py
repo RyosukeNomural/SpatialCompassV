@@ -25,6 +25,8 @@ extensions = [
     'sphinx_design',
 ]
 
+nb_execution_mode = "off"
+
 source_suffix = {
     ".rst": "restructuredtext",
     ".md": "myst",
@@ -42,12 +44,6 @@ exclude_patterns = []
 html_theme = "sphinx_rtd_theme"
 html_static_path = ['_static']
 html_css_files = ['css/custom.css']
-
-nbsphinx_thumbnails = {
-    "tutorials/cell_analysis": "_static/images/logo.png",
-    "tutorials/gene_analysis": "_static/images/logo.png",
-    "tutorials/spatial_deg": "_static/images/logo.png",
-}
 
 def setup(app):
     app.add_css_file("css/custom.css")

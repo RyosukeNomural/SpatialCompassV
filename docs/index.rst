@@ -30,4 +30,4 @@ By integrating information across multiple fields of view, SCOMV further identif
    installation
    api
    tutorials
-   references
+  
