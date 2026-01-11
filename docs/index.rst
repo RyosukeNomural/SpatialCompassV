@@ -13,10 +13,6 @@ SpatialCompassV (SCOMV)
    :target: https://spatialcompassv.readthedocs.io/en/latest/
    :alt: Documentation status
 
-.. image:: https://readthedocs.org/projects/scomv/badge/?version=latest
-   :target: https://readthedocs.org/projects/scomv/
-   :alt: Build status
-
 **SCOMV** is a computational framework for the analysis and visualization of spatial transcriptomics data.
 
 It represents the spatial distribution patterns of cells and genes relative to a user-defined reference region
