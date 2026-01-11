@@ -8,7 +8,7 @@ scipy
 
 sphinx
 nbsphinx
-#myst-parser
+myst-parser
 myst_nb
 sphinx-rtd-theme
 sphinx-design
