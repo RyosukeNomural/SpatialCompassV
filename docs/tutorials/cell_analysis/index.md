@@ -49,7 +49,7 @@ adata = st.ReadXenium(feature_cell_matrix_file=f"{file_}/cell_feature_matrix.h5"
                       library_id="Case7_After",
                       image_path=None,
                       scale=1,
-                      spot_diameter_fullres=10 # Recommend
+                      spot_diameter_fullres=10
                      )
 ```
 

@@ -171,3 +171,5 @@ def plot_3d(
 
     # ---- Figure ----
     fig = go.Figure()
+
+    return fig
