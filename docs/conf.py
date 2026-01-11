@@ -20,7 +20,8 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
-    "myst_nb",
+    'nbsphinx'
+    'myst_parser',
     'sphinx_design',
 ]
 
@@ -28,8 +29,7 @@ nb_execution_mode = "off"
 
 source_suffix = {
     ".rst": "restructuredtext",
-    ".md": "myst",
-    ".ipynb": "myst-nb",
+    ".md": "markdown",
 }
 autosummary_generate = True
 
