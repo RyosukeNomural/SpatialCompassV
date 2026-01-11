@@ -30,7 +30,7 @@ nb_execution_mode = "off"
 
 source_suffix = {
     ".rst": "restructuredtext",
-    ".md": "markdown",
+    ".md": "myst",
 }
 autosummary_generate = True
 
