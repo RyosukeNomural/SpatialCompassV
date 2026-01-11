@@ -20,8 +20,6 @@ extensions = [
     'sphinx.ext.autosummary',
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
-    'nbsphinx',
-    "myst_parser",
     "myst_nb",
     'sphinx_design',
 ]
