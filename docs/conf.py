@@ -28,10 +28,11 @@ extensions = [
 
 nb_execution_mode = "off"
 
-source_suffix = {
-    ".rst": "restructuredtext",
-    ".md": "myst",
-}
+- source_suffix = {
+-     ".rst": "restructuredtext",
+-     ".md": "markdown",
+- }
+
 autosummary_generate = True
 
 exclude_patterns = []
