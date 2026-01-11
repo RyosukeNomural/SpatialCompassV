@@ -8,8 +8,6 @@ scipy
 
 sphinx
 nbsphinx
-myst-nb
-myst-parser
 sphinx-rtd-theme
 sphinx-design
 
