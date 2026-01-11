@@ -10,7 +10,7 @@ SpatialCompassV (SCOMV)
    :alt: PyPI downloads
 
 .. image:: https://readthedocs.org/projects/scomv/badge/?version=latest
-   :target: https://scomv.readthedocs.io/en/latest/
+   :target: https://spatialcompassv.readthedocs.io/en/latest/
    :alt: Documentation status
 
 .. image:: https://readthedocs.org/projects/scomv/badge/?version=latest
