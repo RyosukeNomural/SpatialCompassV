@@ -22,8 +22,15 @@ extensions = [
     'sphinx.ext.napoleon',
     'nbsphinx',
     'myst_parser',
+    "myst_nb",
     'sphinx_design',
 ]
+
+source_suffix = {
+    ".rst": "restructuredtext",
+    ".md": "markdown",
+    ".ipynb": "myst-nb",
+}
 autosummary_generate = True
 
 exclude_patterns = []
