@@ -13,15 +13,6 @@ from adjustText import adjust_text
 from scipy.cluster.hierarchy import linkage, dendrogram, ClusterNode, to_tree
 ```
 
-    /Users/nomura/miniconda3/envs/sc-test310/lib/python3.10/site-packages/louvain/__init__.py:54: UserWarning: pkg_resources is deprecated as an API. See https://setuptools.pypa.io/en/latest/pkg_resources.html. The pkg_resources package is slated for removal as early as 2025-11-30. Refrain from using this package or pin to Setuptools<81.
-      from pkg_resources import get_distribution, DistributionNotFound
-    /Users/nomura/miniconda3/envs/sc-test310/lib/python3.10/site-packages/numba/core/decorators.py:282: RuntimeWarning: nopython is set for njit and is ignored
-      warnings.warn('nopython is set for njit and is ignored', RuntimeWarning)
-    /Users/nomura/miniconda3/envs/sc-test310/lib/python3.10/site-packages/stlearn/tl/cci/het.py:206: NumbaDeprecationWarning: The keyword argument 'nopython=False' was supplied. From Numba 0.59.0 the default is being changed to True and use of 'nopython=False' will raise a warning as the argument will have no effect. See https://numba.readthedocs.io/en/stable/reference/deprecation.html#deprecation-of-object-mode-fall-back-behaviour-when-using-jit for details.
-      @jit(parallel=True, nopython=False)
-
-
-
 ```python
 #!mkdir tutorial_data
 #!mkdir tutorial_data/xenium_data
