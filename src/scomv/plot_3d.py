@@ -5,7 +5,7 @@ from scipy.ndimage import gaussian_filter
 import plotly.graph_objects as go
 
 
-def plot_3d_3(
+def plot_3d(
     adata,
     genes: Union[str, Sequence[str]],                 # Additional genes to plot (1–2)
     anchor_gene: str = "CDH1",                        # Anchor gene (always plotted)
