@@ -32,6 +32,6 @@ Main Features
       .. image:: _static/images/spatial_deg.png
          :width: 220px
 
-      **Region Clustering and Spatial DEG analysis**
+      **Spatial DEG analysis**
 
  
