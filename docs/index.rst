@@ -27,7 +27,7 @@ Overview
 ========================
 
 .. image:: _static/images/overview.png
-   :width: 90%
+   :width: 100%
    :align: left
    :alt: Overview of the SpatialCompassV workflow
 

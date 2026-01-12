@@ -1,5 +1,12 @@
 # SpatialCompassV
-<img width="370" height="145" alt="scomv" src="https://github.com/user-attachments/assets/636006da-884f-4577-8c04-0ae0b718e65e" />
+<p align="center">
+  <img
+    src="images/logo.png"
+    width="370"
+    height="145"
+    alt="SCOMV logo"
+  />
+</p>
 
 
 
