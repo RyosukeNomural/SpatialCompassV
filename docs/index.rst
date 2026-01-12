@@ -23,16 +23,13 @@ By integrating information across multiple fields of view, SCOMV further identif
 (spatial DEGs) that exhibit region-specific spatial reorganization beyond conventional differential expression analysis.
 
 ========================
-SpatialCompassV
+Overview
 ========================
 
-.. image:: _static/overview.png
+.. image:: _static/images/overview.png
    :width: 90%
-   :align: center
+   :align: left
    :alt: Overview of the SpatialCompassV workflow
-
-SpatialCompassV is a computational framework for ...
-
 
 .. toctree::
    :maxdepth: 2
