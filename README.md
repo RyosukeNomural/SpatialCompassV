@@ -1,5 +1,5 @@
 # SpatialCompassV
-<p align="center">
+<p align="left">
   <img
     src="images/logo.png"
     width="370"
