@@ -16,13 +16,13 @@ The source files for SpatialCompassV can be downloaded from the [Github repo](ht
 You can either clone the public repository:
 
 ```sh
-git clone git://github.com/RyosukeNomural/scomv
+git clone git://github.com/RyosukeNomural/SpatialCompassV
 ```
 
 
 Once you have a copy of the source, you can install it with:
 
 ```sh
-cd scomv
+cd SpatialCompassV
 uv pip install .
 ```
