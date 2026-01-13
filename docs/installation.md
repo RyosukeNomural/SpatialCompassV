@@ -11,7 +11,7 @@ pip install scomv
 
 ## From source
 
-The source files for SpatialCompassV can be downloaded from the [Github repo](https://github.com/RyosukeNomural/scomv).
+The source files for SpatialCompassV can be downloaded from the [Github repo](https://github.com/RyosukeNomural/SpatialCompassV).
 
 You can either clone the public repository:
 
