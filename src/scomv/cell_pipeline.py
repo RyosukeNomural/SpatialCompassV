@@ -100,7 +100,7 @@ class CellPolarPipeline:
     # ----------------------------
     # Step 2: cluster polar hist2d
     # ----------------------------
-    def compute_cluster_polar_distributions(
+    def cell_polar_maps(
         self,
         *,
         cell_df_filtered: Optional[pd.DataFrame] = None,
@@ -369,7 +369,7 @@ class CellPolarPipeline:
         clim_ratio: float = 0.5,
     ) -> Dict[str, Any]:
         self.annotate_cells(roi)
-        self.compute_cluster_polar_distributions(plot=plot_hist, clim_ratio=clim_ratio)
+        self.cell_polar_maps(plot=plot_hist, clim_ratio=clim_ratio)
         self.build_distance()
         self.run_pcoa()
         return {

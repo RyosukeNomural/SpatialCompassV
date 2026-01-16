@@ -194,8 +194,8 @@ def contour_regions(
         else:
             plt.close(fig)
 
-    plot_one(x_out, y_out, "Tumor Contour", os.path.join(out_dir, "tumor_contour_region.png"), "yellow")
-    plot_one(x_in, y_in, "Tumor Inside",  os.path.join(out_dir, "tumor_inside_region.png"),  "yellow")
+    # plot_one(x_out, y_out, "Tumor Contour", os.path.join(out_dir, "tumor_contour_region.png"), "yellow")
+    # plot_one(x_in, y_in, "Tumor Inside",  os.path.join(out_dir, "tumor_inside_region.png"),  "yellow")
 
     # combined
     fig, ax = plt.subplots(figsize=(5, 5), facecolor="black")

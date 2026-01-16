@@ -289,7 +289,7 @@ class SCOMVPipeline:
             font=dict(size=18),
         )
         fig.show()
-        # return fig
+        return fig
 
     # =========================================================
     # Public API: run full pipeline (single ROI)
