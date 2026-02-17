@@ -267,7 +267,7 @@ class SCOMVPipeline:
     # Plot: PCoA Plotly
     # ----------------------------
     @staticmethod
-    def plot_pcoa_plotly(coords: pd.DataFrame, labels: List[str], width: int = 1200, height: int = 900, margin: float = 0.05):
+    def plot_pcoa_plotly(coords: pd.DataFrame, labels: List[str], width: int = 720, height: int = 540, margin: float = 0.05):
         df_plot = pd.DataFrame({
             "PCoA1": coords.iloc[:, 0].values,
             "PCoA2": coords.iloc[:, 1].values,
@@ -289,7 +289,7 @@ class SCOMVPipeline:
             font=dict(size=18),
         )
         fig.show()
-        return fig
+        #return fig
 
     # =========================================================
     # Public API: run full pipeline (single ROI)
