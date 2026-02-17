@@ -185,18 +185,8 @@ def plot_3d(
         colorscale=cs1,
         cmin=0, cmax=max(1e-9, float(np.nanmax(z1_scaled))),
         showscale=False,
-        colorbar=dict(
-            title=f"{genes[0] expression}",
-            titleside="top",
-            orientation="h",
-            len=0.15,
-            x=0.85,
-            y=0.45,
-            titlefont=dict(size=18),
-            tickfont=dict(size=14)  
-        ),
-        opacity=0.9,
-        name=str(genes[0])
+        opacity=1.0,
+        name=str(genes[0]),
     ))
 
     # Gene 2 surface
@@ -206,17 +196,6 @@ def plot_3d(
             colorscale=cs2,
             cmin=0, cmax=max(1e-9, float(np.nanmax(z2_scaled))),
             showscale=False,
-            colorbar=dict(
-            title=f"{genes[1] expression}",
-            titleside="top",
-            orientation="h",
-            len=0.15,
-            x=0.85,
-            y=0.25,
-            titlefont=dict(size=18),
-            tickfont=dict(size=14)  
-        ),
-        opacity=0.9,
             opacity=0.9,
             name=str(genes[1]),
         ))
@@ -260,4 +239,3 @@ def plot_3d(
         fig.update_layout(scene=dict(xaxis=dict(autorange="reversed")))
 
     return fig
-
