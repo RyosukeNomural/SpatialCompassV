@@ -221,3 +221,4 @@ __marimo__/
 # Dataset outputs
 src/scomv/dataset/outs/
 
+docs/tutorials/spatial_deg/index_broken.ipynb
