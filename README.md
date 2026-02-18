@@ -51,8 +51,12 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
       The horizontal axis represents distance, and the vertical axis also represents distance. 
       Distances are defined as negative for locations inside the reference region.
     </td>
-    <td style="vertical-align: top; width: 200px; border: none;">
-        <img  height="600" alt="polar_map" src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/polar.png" />
+    <td style="vertical-align: top; border: none;">
+        <img
+          alt="polar_map"
+          src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/polar.png"
+          style="width:280px; height:auto; display:block;"
+        />
     </td>
   </tr>
 </table>
@@ -64,9 +68,12 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
       A <b>similarity matrix</b> is then constructed, followed by <b>PCoA and clustering</b>,
       to classify spatial distribution patterns.
     </td>
-    <td style="vertical-align: top; width: 300px; border: none;">
-      <img height="640" alt="PCoA"
-        src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/pcoa.png" />
+    <td style="vertical-align: top; border: none;">
+      <img
+        alt="PCoA"
+        src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/pcoa.png"
+        style="width:350px; height:auto; display:block;"
+        />
     </td>
   </tr>
 </table>
