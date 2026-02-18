@@ -52,7 +52,7 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
       Distances are defined as negative for locations inside the reference region.
     </td>
     <td style="vertical-align: top; width: 200px; border: none;">
-        <img width="800" height="400" alt="polar_map" src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/polar.png" />
+        <img  height="400" alt="polar_map" src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/polar.png" />
     </td>
   </tr>
 </table>
@@ -65,7 +65,7 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
       to classify spatial distribution patterns.
     </td>
     <td style="vertical-align: top; width: 300px; border: none;">
-      <img width="1491" height="638" alt="PCoA"
+      <img height="640" alt="PCoA"
         src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/pcoa.png" />
     </td>
   </tr>
