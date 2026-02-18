@@ -83,7 +83,7 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
   <img src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/3dplot.png"
        width="300" height="230" alt="3dmap" />
   <img src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/overview.png"
-       width="600" height="230" alt="comparison" />
+       width="720" height="230" alt="comparison" />
 </p>
 
 
