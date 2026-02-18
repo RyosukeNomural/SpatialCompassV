@@ -188,7 +188,7 @@ def contour_regions(
         ax.tick_params(colors="white")
         for sp in ax.spines.values():
             sp.set_edgecolor("white")
-        fig.savefig(path, dpi=300, facecolor="black", bbox_inches="tight")
+        #fig.savefig(path, dpi=300, facecolor="black", bbox_inches="tight")
         if show:
             plt.show()
         else:
@@ -216,7 +216,7 @@ def contour_regions(
     for sp in ax.spines.values():
         sp.set_edgecolor("white")
     ax.legend(facecolor="black", edgecolor="white", fontsize=14, labelcolor="white")
-    fig.savefig(os.path.join(out_dir, "tumor_combined_contour_inside.png"), dpi=300, facecolor="black", bbox_inches="tight")
+    #fig.savefig(os.path.join(out_dir, "tumor_combined_contour_inside.png"), dpi=300, facecolor="black", bbox_inches="tight")
     if show:
         plt.show()
     else:
