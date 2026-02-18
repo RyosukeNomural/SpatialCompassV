@@ -9,7 +9,7 @@
 project = 'SpatialCompassV'
 copyright = '2026, Ryosuke Nomura'
 author = 'Ryosuke Nomura'
-release = '0.1.0'
+release = '0.1.4'
 html_logo = "images/logo.png"
 
 # -- General configuration ---------------------------------------------------
