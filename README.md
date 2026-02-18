@@ -1,5 +1,4 @@
 # SpatialCompassV
-# SpatialCompassV
 <p align="left">
   <img
     src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/logo.png"
