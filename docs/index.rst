@@ -1,7 +1,7 @@
 SpatialCompassV (SCOMV)
 ========================
 
-.. image:: https://img.shields.io/pypi/v/scomv.svg
+.. image:: https://img.shields.io/pypi/v/scomv.svg?cacheSeconds=60
    :target: https://pypi.org/project/scomv/
    :alt: PyPI version
 

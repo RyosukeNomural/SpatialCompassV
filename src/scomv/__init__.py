@@ -1,13 +1,6 @@
 """Top-level package for SpatialCompassV."""
-
-__author__ = """Ryosuke Nomura"""
-
-from importlib.metadata import PackageNotFoundError, version
-
-try:
-    __version__ = version("scomv")
-except PackageNotFoundError:
-    __version__ = "0.1.0"
+__author__ = "Ryosuke Nomura"
+__version__ = "0.1.0"
 
 # --- Public API (entry points) ---
 from .cell_pipeline import CellPolarPipeline
@@ -20,6 +13,6 @@ __all__ = [
     "CellPolarPipeline",
     "SCOMVPipeline",
     "Spatial_DEG",
-    "dendrogram2newick", 
+    "dendrogram2newick",
     "plot_3d",
 ]

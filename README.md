@@ -8,7 +8,7 @@
   />
 </p>
 
-![PyPI version](https://img.shields.io/pypi/v/scomv.svg?cacheSeconds=3600)
+![PyPI version](https://img.shields.io/pypi/v/scomv.svg?cacheSeconds=60)
 [![Documentation Status](https://readthedocs.org/projects/spatialcompassv/badge/?version=latest)](https://spatialcompassv.readthedocs.io/en/latest/?badge=latest)
 
 
