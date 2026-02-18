@@ -1,7 +1,8 @@
 # SpatialCompassV
+# SpatialCompassV
 <p align="left">
   <img
-    src="images/logo.png"
+    src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/logo.png"
     width="370"
     height="145"
     alt="SCOMV logo"
