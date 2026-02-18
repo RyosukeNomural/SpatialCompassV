@@ -52,7 +52,7 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
       Distances are defined as negative for locations inside the reference region.
     </td>
     <td style="vertical-align: top; width: 200px; border: none;">
-        <img  height="400" alt="polar_map" src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/polar.png" />
+        <img  height="600" alt="polar_map" src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/polar.png" />
     </td>
   </tr>
 </table>
