@@ -38,7 +38,7 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
     </td>
     <td style="vertical-align: top; width: 200px; border: none;">
       <img width="200" alt="vector"
-           src="https://github.com/user-attachments/assets/4e0b175a-51a7-4397-a04c-ae3f53a68f92" />
+           src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/vector.png" />
     </td>
   </tr>
 </table>
@@ -52,7 +52,7 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
       Distances are defined as negative for locations inside the reference region.
     </td>
     <td style="vertical-align: top; width: 200px; border: none;">
-        <img width="800" height="400" alt="polar_map" src="https://github.com/user-attachments/assets/aee34cef-994b-427c-8947-9bb25518a353" />
+        <img width="800" height="400" alt="polar_map" src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/polar.png" />
     </td>
   </tr>
 </table>
@@ -66,7 +66,7 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
     </td>
     <td style="vertical-align: top; width: 300px; border: none;">
       <img width="1491" height="638" alt="PCoA"
-        src="https://github.com/user-attachments/assets/860a60c9-6cf8-425c-a824-f5c9664c8654" />
+        src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/pcoa.png" />
     </td>
   </tr>
 </table>
@@ -79,7 +79,7 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
 
 ### Additional functionality
 - Gene distributions can also be visualized as **3D density maps**, allowing direct comparison of the spatial distributions of two genes.
-<img width="300" height="230" alt="3dmap" src="https://github.com/user-attachments/assets/aa0893fb-6e65-4125-b6d7-a7168ab7227f" />
+<img width="300" height="230" alt="3dmap" src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/3dplot.png" />
 
 
 
