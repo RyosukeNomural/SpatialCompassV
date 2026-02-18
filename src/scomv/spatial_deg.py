@@ -191,7 +191,7 @@ class Spatial_DEG:
         xlabel: Optional[str] = None,
         title: Optional[str] = None,
         ytick_fontsize: int = 25,
-        xtick_fontsize: int = 14,
+        xtick_fontsize: int = 18,
     ):
         """
         Signed horizontal bar plot: top positive and top negative (by abs) contributors.
@@ -253,8 +253,8 @@ class Spatial_DEG:
         if title is None:
             title = f"Top signed contributors to PC{pc+1}"
 
-        plt.xlabel(xlabel, fontsize=18)
-        plt.title(title, fontsize=18)
+        plt.xlabel(xlabel, fontsize=22)
+        #plt.title(title, fontsize=18)
         plt.tight_layout()
         plt.show()
 
@@ -324,7 +324,7 @@ class Spatial_DEG:
         n_neighbors: int = 10,
         min_dist: float = 0.1,
         metric: str = "euclidean",
-        random_state: int = 777,
+        random_state: int = 42,
     ):
         """
         Fit UMAP on PCA loadings (features = PCs, rows = genes/features).
