@@ -16,23 +16,35 @@ license = {text = "MIT"}
 requires-python = ">= 3.10"
 
 dependencies = [
-  "typer",
+  "adjustText",
+  "anndata==0.10.5.post1",
+  "dask==2024.8.0",
+  "dask-expr==1.1.10",
+  "fsspec==2023.6.0",
+  "matplotlib",
+  "numcodecs==0.12.1",
   "numpy==1.26.4",
+  "opencv-python==4.11.0.86",
   "pandas==2.3.0",
+  "plotly",
+  "pyogrio==0.11.0",
   "scanpy==1.11.3",
+  "scikit-bio==0.7.0",
+  "scikit-learn==1.7.2",
   "scipy==1.11.4",
+  "seaborn",
+  "shapely==2.0.7",
   "squidpy==1.6.1",
   "stlearn==1.2.2",
-  "anndata",
-  "scikit-bio==0.7.0",
-  "scikit-learn>=1.7,<2",
-  "matplotlib",
-  "seaborn",
-  "adjustText",
-  "plotly",
-  "opencv-python<4.12",
+  "tblib==3.1.0",
+  "tensorboard==2.17.1",
+  "tensorboard-data-server==0.7.2",
+  "tensorflow==2.17.1",
+  "tensorflow-io-gcs-filesystem==0.37.1",
   "tqdm",
+  "typer",
 ]
+
 
 [tool.setuptools.packages.find]
 where = ["src"]
