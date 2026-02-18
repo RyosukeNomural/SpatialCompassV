@@ -149,7 +149,7 @@ def contour_regions(
     if out_dir_base is None:
         out_dir_base = os.getcwd()
     out_dir = os.path.join(out_dir_base, f"{min_x}_{max_x}_{min_y}_{max_y}")
-    os.makedirs(out_dir, exist_ok=True)
+    #os.makedirs(out_dir, exist_ok=True)
 
     def xy_from_df(df):
         if len(df) == 0:
