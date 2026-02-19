@@ -1,6 +1,6 @@
 """Top-level package for SpatialCompassV."""
 __author__ = "Ryosuke Nomura"
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 # --- Public API (entry points) ---
 from .cell_pipeline import CellPolarPipeline
