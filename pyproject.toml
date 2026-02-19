@@ -1,6 +1,6 @@
 [project]
 name = "scomv"
-version = "0.1.0"
+version = "0.1.4.2"
 description = "Spatial omics analysis tools for cell/gene clustering from a standard region"
 readme = "README.md"
 authors = [
@@ -13,7 +13,7 @@ classifiers = [
     # TODO
 ]
 license = {text = "MIT"}
-requires-python = ">= 3.10"
+requires-python = ">= 3.11"
 
 dependencies = [
   "adjustText",
@@ -40,11 +40,15 @@ dependencies = [
   "squidpy==1.6.1",
   "stlearn==1.2.2",
   "tblib==3.1.0",
-  "tensorboard==2.17.1",
+  # ---- TensorFlow stack (prefer 2.17.1; fallback on macOS Intel) ----
+  "tensorflow==2.16.2; python_version>=\"3.11\" and platform_system==\"Darwin\" and platform_machine==\"x86_64\"",
+  "tensorboard==2.16.2; python_version>=\"3.11\" and platform_system==\"Darwin\" and platform_machine==\"x86_64\"",
+  "tensorflow==2.17.1; python_version>=\"3.11\" and (platform_system!=\"Darwin\" or platform_machine!=\"x86_64\")",
+  "tensorboard==2.17.1; python_version>=\"3.11\" and (platform_system!=\"Darwin\" or platform_machine!=\"x86_64\")",
+
+
   "tensorboard-data-server==0.7.2",
-  "tensorflow==2.17.1",
   "tensorflow-io-gcs-filesystem==0.37.1",
-  "tifffile==2024.8.30",
   "tqdm",
   "typer",
   "xarray==2024.7.0",
