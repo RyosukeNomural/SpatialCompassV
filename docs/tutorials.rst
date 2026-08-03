@@ -8,6 +8,15 @@ Main Features
    :gutter: 3
 
    .. grid-item-card::
+      :link: tutorials/tumor_solid_analysis
+      :text-align: center
+
+      .. image:: _static/images/tumor_solid_analysis.png
+         :width: 220px
+
+      **Tumor Clustering based on Uniformity**
+
+   .. grid-item-card::
       :link: tutorials/cell_analysis
       :text-align: center
 
@@ -25,13 +34,6 @@ Main Features
 
       **Gene Distribution Clustering**
 
-   .. grid-item-card::
-      :link: tutorials/spatial_deg
-      :text-align: center
 
-      .. image:: _static/images/spatial_deg.png
-         :width: 220px
-
-      **Spatial DEG analysis**
 
  
