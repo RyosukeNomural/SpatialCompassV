@@ -1,0 +1,15 @@
+numpy
+pandas
+matplotlib
+seaborn
+scikit-bio
+scikit-learn
+scipy
+
+sphinx
+nbsphinx
+myst-parser
+myst_nb
+sphinx-rtd-theme
+sphinx-design
+
