@@ -94,7 +94,70 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
 
 
 
+## Installation
+
+### Stable release
+
+To install SpatialCompassV, run this command in your terminal:
+
+```sh
+pip install scomv
+```
+
+### From source
+
+The source files for SpatialCompassV can be downloaded from the [Github repo](https://github.com/RyosukeNomural/SpatialCompassV).
+
+You can either clone the public repository:
+
+```sh
+git clone git://github.com/RyosukeNomural/SpatialCompassV
+```
+
+Once you have a copy of the source, you can install it with:
+
+```sh
+cd SpatialCompassV
+pip install .
+```
+
+
+## Test Dataset & Quick Start
+
+This repository includes a small example dataset — a 10x Genomics Xenium
+human breast cancer FFPE section, from the
+[10x Genomics Xenium Human Breast Cancer preview dataset](https://www.10xgenomics.com/jp/products/xenium-in-situ/preview-dataset-human-breast) —
+under [`docs/tutorials/tutorial_data/`](https://github.com/RyosukeNomural/SpatialCompassV/tree/main/docs/tutorials/tutorial_data),
+so SCOMV can be run end-to-end without downloading anything separately.
+
+Open any of the tutorial notebooks below in Jupyter; each one loads the test
+dataset above and runs a full SCOMV pipeline on it:
+
+```bash
+git clone https://github.com/RyosukeNomural/SpatialCompassV.git
+cd SpatialCompassV
+jupyter notebook docs/tutorials/gene_analysis/index.ipynb   # or cell_analysis / tumor_solid_analysis
+```
+
+- **[Gene Distribution Clustering](https://github.com/RyosukeNomural/SpatialCompassV/blob/main/docs/tutorials/gene_analysis/index.ipynb)**
+  — input: `tutorial_data/xenium_data/` → output: gene clusters by spatial distribution pattern
+- **[Cell Distribution Clustering](https://github.com/RyosukeNomural/SpatialCompassV/blob/main/docs/tutorials/cell_analysis/index.ipynb)**
+  — input: `tutorial_data/xenium_data/` + `Cell_Barcode_Type_Matrices.xlsx` → output: cell-type groupings by distance-to-tumor pattern
+- **[Tumor Clustering based on Uniformity](https://github.com/RyosukeNomural/SpatialCompassV/blob/main/docs/tutorials/tumor_solid_analysis/index.ipynb)**
+  — input: `tutorial_data/xenium_data/` + `cell.xlsx` → output: tumor "solid" region clusters by immune-cell uniformity
+
+Example output:
+
+<p>
+  <img src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/docs/_static/images/gene_analysis.png" width="200" alt="gene_analysis example output"/>
+  <img src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/docs/_static/images/cell_analysis.png" width="200" alt="cell_analysis example output"/>
+  <img src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/docs/_static/images/tumor_solid_analysis.png" width="200" alt="tumor_solid_analysis example output"/>
+</p>
+
+For full step-by-step instructions, parameters, and expected intermediate
+results, see the tutorials: https://spatialcompassv.readthedocs.io/en/latest/tutorials.html
+
+
 ## Credits
 
 This package was created with [Cookiecutter](https://github.com/audreyfeldroy/cookiecutter) and the [audreyfeldroy/cookiecutter-pypackage](https://github.com/audreyfeldroy/cookiecutter-pypackage) project template.
->>>>>>> 79d3344 (Initial commit (cookiecutter-scientific-python))
