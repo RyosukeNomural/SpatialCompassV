@@ -4,8 +4,7 @@
     width="220"
     height="86"
     alt="SCOMV logo"
-    align="left"
-    style="margin-right: 16px;"
+    align="right"
   />
   <h1>SpatialCompassV</h1>
 </p>
