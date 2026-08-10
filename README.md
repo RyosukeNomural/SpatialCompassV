@@ -53,7 +53,7 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
         <img
           alt="polar_map"
           src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/polar.png"
-          style="width:400px; height:auto; display:block;"
+          style="width:600px; height:auto; display:block;"
         />
     </td>
   </tr>
