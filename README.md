@@ -1,4 +1,4 @@
-# SpatialCompassV <img src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/logo.png" width="190" alt="SCOMV logo" style="vertical-align: middle;"/>
+# SpatialCompassV <img src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/logo.png" width="240" align="middle" alt="SCOMV logo"/>
 
 ![PyPI version](https://img.shields.io/pypi/v/scomv.svg?dummy=99)
 [![Documentation Status](https://readthedocs.org/projects/spatialcompassv/badge/?version=latest)](https://spatialcompassv.readthedocs.io/en/latest/?badge=latest)
