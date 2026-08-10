@@ -2,8 +2,8 @@
 <p align="left">
   <img
     src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/logo.png"
-    width="370"
-    height="145"
+    width="220"
+    height="86"
     alt="SCOMV logo"
   />
 </p>
