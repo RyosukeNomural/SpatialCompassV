@@ -62,18 +62,16 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
 <table border="0" style="border-collapse: collapse; border: none;">
   <tr>
     <td style="vertical-align: top; padding-right: 14px; border: none;">
-      A <b>uniformity</b> score is also computed for each distance bin, quantifying how
-      evenly a given cell type or gene is distributed across all angular directions
-      around the reference region, based on the entropy of its polar histogram.
-      A uniformity close to 1 indicates a symmetric, ring-like distribution around the
-      region, whereas a low uniformity reveals that the signal is concentrated toward
-      one particular side.
+      A <b>uniformity</b> score is also computed for each distance bin, measuring how
+      evenly a cell type or gene surrounds the reference region across all angular
+      directions. High uniformity indicates a symmetric, ring-like distribution, while
+      low uniformity means the signal is concentrated on one side.
     </td>
     <td style="vertical-align: top; border: none;">
       <img
         alt="uniformity"
         src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/uniformity.png"
-        style="width:400px; height:auto; display:block;"
+        style="width:600px; height:auto; display:block;"
         />
     </td>
   </tr>
