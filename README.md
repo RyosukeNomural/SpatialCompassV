@@ -1,11 +1,13 @@
-# SpatialCompassV
 <p align="left">
   <img
     src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/logo.png"
     width="220"
     height="86"
     alt="SCOMV logo"
+    align="left"
+    style="margin-right: 16px;"
   />
+  <h1>SpatialCompassV</h1>
 </p>
 
 ![PyPI version](https://img.shields.io/pypi/v/scomv.svg?dummy=99)
