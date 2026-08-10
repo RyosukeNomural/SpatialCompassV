@@ -145,6 +145,9 @@ cd SpatialCompassV
 jupyter notebook docs/tutorials/gene_analysis/index.ipynb   # or cell_analysis / tumor_solid_analysis
 ```
 
+For full step-by-step instructions, parameters, and expected intermediate
+results, see the tutorials: https://spatialcompassv.readthedocs.io/en/latest/tutorials.html
+
 **[Tumor Clustering based on Uniformity](https://github.com/RyosukeNomural/SpatialCompassV/blob/main/docs/tutorials/tumor_solid_analysis/index.ipynb)**
 — input: `tutorial_data/xenium_data/` + `cell.xlsx` → output: tumor "solid" region clusters by immune-cell uniformity
 
@@ -159,9 +162,6 @@ jupyter notebook docs/tutorials/gene_analysis/index.ipynb   # or cell_analysis /
 — input: `tutorial_data/xenium_data/` → output: gene clusters by spatial distribution pattern
 
 <img src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/docs/_static/images/gene_analysis.png" width="320" alt="gene_analysis example output"/>
-
-For full step-by-step instructions, parameters, and expected intermediate
-results, see the tutorials: https://spatialcompassv.readthedocs.io/en/latest/tutorials.html
 
 
 ## Credits
