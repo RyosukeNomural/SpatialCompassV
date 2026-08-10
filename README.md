@@ -1,12 +1,4 @@
-<div style="display: flex; align-items: center; gap: 16px;">
-  <h1 style="margin: 0;">SpatialCompassV</h1>
-  <img
-    src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/logo.png"
-    width="150"
-    height="59"
-    alt="SCOMV logo"
-  />
-</div>
+# SpatialCompassV <img src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/logo.png" width="150" alt="SCOMV logo"/>
 
 ![PyPI version](https://img.shields.io/pypi/v/scomv.svg?dummy=99)
 [![Documentation Status](https://readthedocs.org/projects/spatialcompassv/badge/?version=latest)](https://spatialcompassv.readthedocs.io/en/latest/?badge=latest)
