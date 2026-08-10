@@ -71,7 +71,7 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
       <img
         alt="uniformity"
         src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/uniformity.png"
-        style="width:600px; height:auto; display:block;"
+        style="width:800px; height:auto; display:block;"
         />
     </td>
   </tr>
@@ -88,7 +88,7 @@ The overall workflow of **SpatialCompassV (SCOMV)** is summarized as follows:
       <img
         alt="PCoA"
         src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/images/pcoa.png"
-        style="width:600px; height:auto; display:block;"
+        style="width:800px; height:auto; display:block;"
         />
     </td>
   </tr>
@@ -153,20 +153,20 @@ cd SpatialCompassV
 jupyter notebook docs/tutorials/gene_analysis/index.ipynb   # or cell_analysis / tumor_solid_analysis
 ```
 
-**[Gene Distribution Clustering](https://github.com/RyosukeNomural/SpatialCompassV/blob/main/docs/tutorials/gene_analysis/index.ipynb)**
-— input: `tutorial_data/xenium_data/` → output: gene clusters by spatial distribution pattern
+**[Tumor Clustering based on Uniformity](https://github.com/RyosukeNomural/SpatialCompassV/blob/main/docs/tutorials/tumor_solid_analysis/index.ipynb)**
+— input: `tutorial_data/xenium_data/` + `cell.xlsx` → output: tumor "solid" region clusters by immune-cell uniformity
 
-<img src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/docs/_static/images/gene_analysis.png" width="320" alt="gene_analysis example output"/>
+<img src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/docs/_static/images/tumor_solid_analysis.png" width="320" alt="tumor_solid_analysis example output"/>
 
 **[Cell Distribution Clustering](https://github.com/RyosukeNomural/SpatialCompassV/blob/main/docs/tutorials/cell_analysis/index.ipynb)**
 — input: `tutorial_data/xenium_data/` + `Cell_Barcode_Type_Matrices.xlsx` → output: cell-type groupings by distance-to-tumor pattern
 
 <img src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/docs/_static/images/cell_analysis.png" width="320" alt="cell_analysis example output"/>
 
-**[Tumor Clustering based on Uniformity](https://github.com/RyosukeNomural/SpatialCompassV/blob/main/docs/tutorials/tumor_solid_analysis/index.ipynb)**
-— input: `tutorial_data/xenium_data/` + `cell.xlsx` → output: tumor "solid" region clusters by immune-cell uniformity
+**[Gene Distribution Clustering](https://github.com/RyosukeNomural/SpatialCompassV/blob/main/docs/tutorials/gene_analysis/index.ipynb)**
+— input: `tutorial_data/xenium_data/` → output: gene clusters by spatial distribution pattern
 
-<img src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/docs/_static/images/tumor_solid_analysis.png" width="320" alt="tumor_solid_analysis example output"/>
+<img src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/docs/_static/images/gene_analysis.png" width="320" alt="gene_analysis example output"/>
 
 For full step-by-step instructions, parameters, and expected intermediate
 results, see the tutorials: https://spatialcompassv.readthedocs.io/en/latest/tutorials.html
