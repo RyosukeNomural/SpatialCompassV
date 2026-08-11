@@ -164,6 +164,17 @@ results, see the tutorials: https://spatialcompassv.readthedocs.io/en/latest/tut
 <img src="https://raw.githubusercontent.com/RyosukeNomural/SpatialCompassV/main/docs/_static/images/gene_analysis.png" width="320" alt="gene_analysis example output"/>
 
 
+## Supplementary Analysis
+
+Supplementary analysis notebooks supporting the paper are kept in
+[`supplementary/`](https://github.com/RyosukeNomural/SpatialCompassV/tree/main/supplementary),
+separate from the package tutorials above. This currently includes
+[`lung_cancer_panel.ipynb`](https://github.com/RyosukeNomural/SpatialCompassV/blob/main/supplementary/lung_cancer_panel.ipynb),
+which reproduces the paper's two-stage gene clustering (PCoA + density ratio, then PCoA +
+uniformity) on a lung cancer Xenium panel. Note that the underlying dataset for this
+notebook is unpublished and not included in this repository.
+
+
 ## Credits
 
 This package was created with [Cookiecutter](https://github.com/audreyfeldroy/cookiecutter) and the [audreyfeldroy/cookiecutter-pypackage](https://github.com/audreyfeldroy/cookiecutter-pypackage) project template.
