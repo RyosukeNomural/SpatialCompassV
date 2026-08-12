@@ -174,6 +174,10 @@ which reproduces the paper's two-stage gene clustering (PCoA + density ratio, th
 uniformity) on a lung cancer Xenium panel. Note that the underlying dataset for this
 notebook is unpublished and not included in this repository.
 
+[`breast_cancer_morans_i.ipynb`](https://github.com/RyosukeNomural/SpatialCompassV/blob/main/supplementary/breast_cancer_morans_i.ipynb)
+computes Moran's I and Geary's C spatial autocorrelation for genes within a given field of
+view of the breast cancer test dataset and plots the top genes for each statistic.
+
 
 ## Credits
 
