@@ -99,7 +99,7 @@ lazy_loader==0.4
 legacy-api-wrap==1.4.1
 leidenalg==0.10.2
 libclang==18.1.1
-llvmlite==0.41.1
+llvmlite>=0.41.1,<0.44
 locket==1.0.0
 loguru==0.7.3
 louvain==0.8.2
@@ -127,7 +127,7 @@ nest-asyncio==1.6.0
 networkx==3.2.1
 notebook==7.4.3
 notebook_shim==0.2.4
-numba==0.58.1
+numba>=0.58.1,<0.61
 numcodecs==0.12.1
 #numpy==1.25.2
 numpy==1.26.4
@@ -193,11 +193,11 @@ scikit-bio==0.7.0
 scikit-image>=0.22,<0.23
 #scikit-learn==1.6.1
 scikit-learn>=1.7,<2
-scipy==1.11.4
+scipy>=1.11.4,<1.16
 seaborn==0.13.2
 Send2Trash==1.8.3
 session_info==1.0.1
-shapely==2.0.7
+shapely>=2.0.7,<2.3
 six==1.17.0
 slicerator==1.1.0
 sniffio==1.3.1

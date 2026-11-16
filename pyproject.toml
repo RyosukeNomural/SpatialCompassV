@@ -23,9 +23,9 @@ dependencies = [
   "fsspec==2023.6.0",
   "geopandas==1.0.1",
   "hdbscan",
-  "llvmlite==0.41.1",
+  "llvmlite>=0.41.1,<0.44",       # 0.41.1 and 0.43.0 verified; 0.43 avoids an LLVM crash on Apple silicon
   "matplotlib",
-  "numba==0.58.1",
+  "numba>=0.58.1,<0.61",          # 0.58.1 and 0.60.0 give identical results; 0.60 avoids the crash
   "numcodecs==0.12.1",
   "numpy==1.26.4",
   "ome-zarr==0.10.2",
@@ -36,9 +36,9 @@ dependencies = [
   "scanpy==1.11.3",
   "scikit-bio==0.7.0",
   "scikit-learn==1.7.2",
-  "scipy==1.11.4",
+  "scipy>=1.11.4,<1.16",          # 1.15.0 used in the working envs; esda 2.9 (installed with decoupler setups) needs >=1.12
   "seaborn",
-  "shapely==2.0.7",
+  "shapely>=2.0.7,<2.3",          # 2.2.0 used in the working envs
   "spatialdata==0.2.5.post0",
   "squidpy==1.6.1",
   "stlearn==1.2.2",
