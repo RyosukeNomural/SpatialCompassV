@@ -178,6 +178,11 @@ def plot_3d(
     # ---- Figure ----
     fig = go.Figure()
     Xg, Yg = np.meshgrid(x, y)
+    # Plotly draws white x/y/z contour lines through the hovered point on every
+    # surface; disable them so moving the cursor over the map leaves no lines.
+    no_highlight = dict(
+        x=dict(highlight=False), y=dict(highlight=False), z=dict(highlight=False)
+    )
 
     # Gene 1 surface
     fig.add_trace(go.Surface(
@@ -185,6 +190,7 @@ def plot_3d(
         colorscale=cs1,
         cmin=0, cmax=max(1e-9, float(np.nanmax(z1_scaled))),
         showscale=False,
+        contours=no_highlight,
         opacity=1.0,
         name=str(genes[0]),
     ))
@@ -196,6 +202,7 @@ def plot_3d(
             colorscale=cs2,
             cmin=0, cmax=max(1e-9, float(np.nanmax(z2_scaled))),
             showscale=False,
+            contours=no_highlight,
             opacity=0.9,
             name=str(genes[1]),
         ))
@@ -206,6 +213,7 @@ def plot_3d(
         colorscale=cs_anchor,
         cmin=0, cmax=max(1e-9, float(np.nanmax(za_scaled))),
         showscale=False,
+        contours=no_highlight,
         opacity=0.35,
         name=str(anchor_gene),
     ))
@@ -216,6 +224,7 @@ def plot_3d(
             x=Xg, y=Yg, z=z_overlap,
             colorscale=cs_overlap,
             showscale=False,
+            contours=no_highlight,
             opacity=0.95,
             name="overlap",
         ))
@@ -223,10 +232,11 @@ def plot_3d(
     fig.update_layout(
         title=f"{genes[0]}" + (f" & {genes[1]}" if len(genes) == 2 else "") + " (3D)",
         scene=dict(
-            xaxis=dict(title="imagecol"),
-            yaxis=dict(title="imagerow"),
+            xaxis=dict(title="imagecol", showspikes=False),
+            yaxis=dict(title="imagerow", showspikes=False),
             zaxis=dict(
                 title="expression",
+                showspikes=False,
                 tickvals=tick_vals_scaled,
                 ticktext=tick_text,
             ),
