@@ -14,6 +14,7 @@ def annotate_cells(
     x_col: int = 0,
     y_col: int = 1,
     coord_col: str = "coord_tuple",
+    grid=None,
 ) -> pd.DataFrame:
     """
     Filter cells by ROI and add a grid coordinate tuple.
@@ -30,6 +31,13 @@ def annotate_cells(
         Column indices for x and y
     coord_col : str
         Name of the output grid-coordinate column
+    grid : AnnData, optional
+        The stlearn grid whose squares ``min_vector_df`` is indexed by. If given
+        (recommended), each cell is placed in its grid square with the grid's
+        own edges (:func:`scomv.preparation.grid_index.points_to_grid_ij`);
+        otherwise ``floor(coordinate / bin_size)`` is used, which matches the
+        grid square only when the grid origin is 0 and the width is exactly
+        ``bin_size`` (on the breast Xenium tutorial data only ~45 % of cells).
 
     Returns
     -------
@@ -44,10 +52,15 @@ def annotate_cells(
         (cell_df.iloc[:, y_col] > min_y) & (cell_df.iloc[:, y_col] < max_y)
     ].copy()
 
-    filtered_df[coord_col] = list(zip(
-        np.floor(filtered_df.iloc[:, x_col] / bin_size).astype(int),
-        np.floor(filtered_df.iloc[:, y_col] / bin_size).astype(int),
-    ))
+    if grid is not None:
+        from scomv.preparation.grid_index import points_to_grid_ij
+        gi, gj = points_to_grid_ij(filtered_df.iloc[:, x_col].to_numpy(), filtered_df.iloc[:, y_col].to_numpy(), grid)
+        filtered_df[coord_col] = list(zip(gi.tolist(), gj.tolist()))
+    else:
+        filtered_df[coord_col] = list(zip(
+            np.floor(filtered_df.iloc[:, x_col] / bin_size).astype(int),
+            np.floor(filtered_df.iloc[:, y_col] / bin_size).astype(int),
+        ))
 
     return filtered_df
     

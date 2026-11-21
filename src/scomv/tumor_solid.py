@@ -75,6 +75,7 @@ from scipy.stats import mannwhitneyu
 from sklearn.preprocessing import StandardScaler
 
 from scomv.cell import annotate_cells, compute_cluster_polar_distributions
+from scomv.preparation.grid_index import grid_index_names, grid_square_ij, points_to_grid_ij
 from scomv.preparation.scomv_calc_vector import compute_min_vectors_polar
 
 
@@ -117,12 +118,14 @@ def label_solid_regions(
     img_gray = cv2.cvtColor(img_color, cv2.COLOR_BGR2GRAY)
     retval, labels, stats, centroids = cv2.connectedComponentsWithStats(img_gray)
 
-    for i in range(1, retval):
-        if stats[i, cv2.CC_STAT_AREA] < min_area:
-            labels[labels == i] = 0
-
-    labels = labels.astype(np.uint8)
-    retval, labels, stats, centroids = cv2.connectedComponentsWithStats(labels)
+    # Keep components with area >= min_area as a binary mask, then relabel.
+    # (Casting the raw int32 label image to uint8 instead made every
+    # component whose raw id is a multiple of 256 vanish once an image had
+    # >= 256 components.)
+    keep = stats[:, cv2.CC_STAT_AREA] >= min_area
+    keep[0] = False
+    mask = keep[labels].astype(np.uint8)
+    retval, labels, stats, centroids = cv2.connectedComponentsWithStats(mask)
 
     return labels, stats, centroids
 
@@ -222,7 +225,7 @@ def extract_tumor_solids(
     df_shortest["solid"] = solid_ls
 
     df_grid = grid.to_df()
-    all_grid_index = [f"grid_{i + 1}" for i in range(N_ROW * N_COL)]
+    all_grid_index = grid_index_names(grid)   # same square order/numbering as calculate_distance
     df_grid = pd.merge(pd.DataFrame(index=all_grid_index),
                         df_grid, right_index=True, left_index=True, how="left").fillna(np.nan)
 
@@ -268,6 +271,7 @@ def assign_solid_ids(
     bin_size: int = 10,
     x_col: str = "imagecol",
     y_col: str = "imagerow",
+    grid=None,
 ) -> np.ndarray:
     """
     Map each row's (x_col, y_col) spatial coordinate onto a solid label image.
@@ -283,6 +287,12 @@ def assign_solid_ids(
         Pixel size of one label-image cell, in the same units as x_col/y_col.
     x_col, y_col : str
         Column names holding the spatial coordinates.
+    grid : AnnData, optional
+        The stlearn grid the label image was built from. If given (recommended),
+        each point is placed in its grid square with the grid's own edges
+        (:func:`scomv.preparation.grid_index.points_to_grid_ij`); otherwise
+        ``coordinate // bin_size`` is used, which is off by one square when the
+        grid origin is not 0 or the square width is not exactly ``bin_size``.
 
     Returns
     -------
@@ -290,8 +300,11 @@ def assign_solid_ids(
         Solid id per row. Points that fall outside ``labels_img`` bounds are
         assigned 0 (same as unlabeled background).
     """
-    cols = (df[x_col].to_numpy() // bin_size).astype(int)
-    rows = (df[y_col].to_numpy() // bin_size).astype(int)
+    if grid is not None:
+        cols, rows = points_to_grid_ij(df[x_col].to_numpy(), df[y_col].to_numpy(), grid)
+    else:
+        cols = (df[x_col].to_numpy() // bin_size).astype(int)
+        rows = (df[y_col].to_numpy() // bin_size).astype(int)
     h, w = labels_img.shape
     valid = (rows >= 0) & (rows < h) & (cols >= 0) & (cols < w)
     solid_ids = np.zeros(len(df), dtype=int)
@@ -305,6 +318,7 @@ def compute_solid_min_vectors(
     solid_id: int,
     bin_size: int = 10,
     margin_bins: int = 15,
+    mask_other_solids: bool = False,
 ):
     """
     Grid-square subset around one solid and the per-square minimum-distance
@@ -324,6 +338,13 @@ def compute_solid_min_vectors(
         Grid bin size, in the same spatial units as ``grid.obs`` columns.
     margin_bins : int
         Number of extra grid bins to include around the solid's bounding box.
+    mask_other_solids : bool
+        If True, drop grid squares that lie inside another solid (the
+        interior of any other labelled solid in ``solid.shortest``). Distances
+        and angles are still measured from this solid's own boundary; only
+        the other tumors' epithelium is removed from the field, so it is not
+        counted as this solid's surrounding stroma. Stroma between tumors is
+        kept. Default False (previous behaviour).
 
     Returns
     -------
@@ -357,19 +378,23 @@ def compute_solid_min_vectors(
     ymin_b = min(ybins) - margin_bins
     ymax_b = max(ybins) + margin_bins
 
-    def to_bin(r):
-        return (int(r["imagecol"] // bin_size), int(r["imagerow"] // bin_size))
-
-    bin_series = grid.obs.apply(to_bin, axis=1)
+    # (column, row) of every grid square from its name -- the same index as
+    # solid.shortest / the label image (see scomv.preparation.grid_index)
+    gi, gj = grid_square_ij(grid)
+    bin_series = pd.Series(list(zip(gi.tolist(), gj.tolist())), index=grid.obs_names)
     in_box = bin_series.apply(
         lambda t: xmin_b <= t[0] <= xmax_b and ymin_b <= t[1] <= ymax_b
     )
+    if mask_other_solids:
+        other_solid = df_sh["solid"].fillna(0)
+        other_sq = set(df_sh.index[(other_solid != 0) & (other_solid != solid_id)])
+        in_box &= ~bin_series.apply(lambda t: t in other_sq)
     subset_grid = grid[in_box].copy()
 
     if subset_grid.n_obs == 0:
         raise ValueError(f"solid_id={solid_id}: empty subset_grid")
 
-    xy_list = [to_bin(r) for _, r in subset_grid.obs.iterrows()]
+    xy_list = bin_series[in_box.to_numpy()].tolist()
 
     outline_pts = list(df_interior.index[
         (df_interior["euclidean"] >= -1.0) & (df_interior["euclidean"] <= 0.0)
@@ -407,6 +432,7 @@ def compute_per_solid_polar_counts(
     margin_bins: int = 15,
     min_cells: int = 5,
     cluster_col: str = "Cluster",
+    mask_other_solids: bool = False,
 ) -> Dict[str, Dict[int, Tuple[np.ndarray, int]]]:
     """
     For each solid and each cell type, compute the polar 2D-histogram counts
@@ -431,6 +457,11 @@ def compute_per_solid_polar_counts(
         histogram (passed to ``scomv.cell.compute_cluster_polar_distributions``).
     cluster_col : str
         Column in ``cell_df`` holding the cell type label.
+    mask_other_solids : bool
+        Passed to :func:`compute_solid_min_vectors`. If True, cells whose grid
+        square lies inside another solid are also dropped (from both the
+        histogram and the cell count); all other cells are handled exactly as
+        with ``mask_other_solids=False``.
 
     Returns
     -------
@@ -445,12 +476,20 @@ def compute_per_solid_polar_counts(
         sid = int(solid_id)
         try:
             _, min_vector_df, roi = compute_solid_min_vectors(
-                grid, solid, solid_id=sid, bin_size=bin_size, margin_bins=margin_bins
+                grid, solid, solid_id=sid, bin_size=bin_size, margin_bins=margin_bins,
+                mask_other_solids=mask_other_solids,
             )
         except ValueError:
             continue
 
-        cell_sub = annotate_cells(cell_df, roi=roi, bin_size=bin_size)
+        cell_sub = annotate_cells(cell_df, roi=roi, bin_size=bin_size, grid=grid)
+        if mask_other_solids:
+            # drop only the cells that sit inside another solid (same squares as
+            # compute_solid_min_vectors removes); other cells are kept exactly as
+            # in the default path, so the cell count changes only by the masking
+            sh_solid = solid.shortest["solid"].fillna(0)
+            other_sq = set(solid.shortest.index[(sh_solid != 0) & (sh_solid != sid)])
+            cell_sub = cell_sub[~cell_sub["coord_tuple"].isin(other_sq)]
 
         for ct in cell_types:
             sub = cell_sub[cell_sub[cluster_col] == ct].copy()
@@ -768,6 +807,7 @@ def plot_uniformity_by_cluster(
     max_bars: Optional[int] = None,
     sig_start: float = 1.04,
     top_margin: float = 0.72,
+    singleton_size: float = 150,
     ax=None,
 ):
     """
@@ -802,6 +842,11 @@ def plot_uniformity_by_cluster(
         leave above the axes for the title + significance bars. If bars
         overlap the title, lower this (e.g. 0.6); if there's too much empty
         space, raise it (e.g. 0.85). Has no effect when ``ax`` is given.
+    singleton_size : float
+        Marker ``s`` (area, in points^2) for clusters with only one solid —
+        drawn larger than the regular strip-plot points (which are a fixed
+        size regardless of cluster n) since a lone point is otherwise easy
+        to miss.
     ax : matplotlib.axes.Axes or None
         Draw into an existing axes instead of creating a new figure.
 
@@ -836,10 +881,20 @@ def plot_uniformity_by_cluster(
     sns.violinplot(data=df_plot, x="cluster", y="score",
                    hue="cluster", order=clust_labels,
                    palette=str_palette, inner="box", linewidth=1.2, legend=False, ax=ax)
-    sns.stripplot(data=df_plot, x="cluster", y="score",
-                  hue="cluster", order=clust_labels,
-                  palette=str_palette, size=4, jitter=True,
-                  alpha=0.6, linewidth=0.3, edgecolor="white", legend=False, ax=ax)
+
+    # Singleton clusters (n=1) get their own larger, non-jittered marker —
+    # sns.stripplot draws every point at the same fixed size, which makes a
+    # lone point (the cluster's entire distribution) easy to overlook.
+    singleton_ks = [k for k in range(n_clusters) if len(data_by_cluster[k]) == 1]
+    multi_df = df_plot[~df_plot["cluster"].isin([f"c{k}" for k in singleton_ks])]
+    if not multi_df.empty:
+        sns.stripplot(data=multi_df, x="cluster", y="score",
+                      hue="cluster", order=clust_labels,
+                      palette=str_palette, size=4, jitter=True,
+                      alpha=0.6, linewidth=0.3, edgecolor="white", legend=False, ax=ax)
+    for k in singleton_ks:
+        ax.scatter(k, data_by_cluster[k][0], s=singleton_size, color=palette[k],
+                   edgecolor="white", linewidth=0.8, zorder=5)
 
     ax.set_ylim(*ylim)
     add_significance_bars(ax, data_by_cluster, n_clusters, max_bars=max_bars, start=sig_start)
@@ -909,7 +964,7 @@ def plot_uniformity_heatmap(
     g.ax_heatmap.set_xticklabels(g.ax_heatmap.get_xticklabels(), fontsize=xtick_fontsize, rotation=90)
     g.ax_heatmap.set_yticklabels(g.ax_heatmap.get_yticklabels(), fontsize=ytick_fontsize, rotation=0)
     g.ax_heatmap.set_ylabel("")
-    g.cax.set_ylabel(cbar_label, fontsize=9, rotation=270, labelpad=12)
+    g.cax.set_ylabel(cbar_label, fontsize=9, rotation=270, labelpad=24)
 
     if save_path is not None:
         g.savefig(save_path, dpi=300)
@@ -1013,7 +1068,8 @@ def plot_cluster_map(
         for k in range(n_clusters)
     ]
     ax.legend(handles=legend_elements, title=legend_title or f"Cluster (k={n_clusters})",
-              loc="upper right", fontsize=9, title_fontsize=10, frameon=True)
+              loc="upper left", bbox_to_anchor=(1.02, 1.0), borderaxespad=0.0,
+              fontsize=9, title_fontsize=10, frameon=True)
     ax.axis("off")
     ax.set_title(title, fontsize=13, fontweight="bold")
 
@@ -1038,8 +1094,8 @@ def plot_cell_type_over_clusters(
     dot_size: float = 2,
     fade: float = 0.1,
     background_rgb: Tuple[int, int, int] = (220, 220, 220),
-    figsize: Tuple[float, float] = (8, 7),
-    dpi: int = 150,
+    figsize: Tuple[float, float] = (14, 11),
+    dpi: int = 120,
     save_path: Optional[str] = None,
     ax=None,
 ):
@@ -1118,14 +1174,15 @@ def plot_cell_type_over_clusters(
     ax.set_xlim(0, w_px)
     ax.set_ylim(h_px, 0)
     ax.axis("off")
-    ax.set_title(f"{cell_type}  (n={len(sub):,})", fontsize=11, fontweight="bold")
+    ax.set_title(f"{cell_type}  (n={len(sub):,})", fontsize=13, fontweight="bold")
 
     legend_handles = [
         mpatches.Patch(facecolor=palette[k], edgecolor="none",
                        label=f"c{k}  (n={cluster_sizes[k]})")
         for k in sorted(cluster_sizes)
     ] + [mpatches.Patch(facecolor=dot_color, edgecolor="none", label=cell_type)]
-    ax.legend(handles=legend_handles, loc="upper right", fontsize=8, frameon=True)
+    ax.legend(handles=legend_handles, loc="upper left", bbox_to_anchor=(1.02, 1.0),
+              borderaxespad=0.0, fontsize=9, frameon=True)
 
     if save_path is not None:
         fig.savefig(save_path, dpi=300, bbox_inches="tight")
@@ -1140,6 +1197,7 @@ def compute_expression_fold_factor(
     solid_ids_b: Union[int, Sequence[int]],
     bin_size: int = 10,
     margin_bins: int = 15,
+    mask_other_solids: bool = False,
 ) -> float:
     """
     Total-expression fold factor between two solid groups, to correct for a
@@ -1160,8 +1218,9 @@ def compute_expression_fold_factor(
         Ward cluster). These are the same numbers shown as text labels in
         :func:`plot_cluster_map` and stored in ``solid.obs["solid"]`` — look
         there first to decide what to pass.
-    bin_size, margin_bins : int
-        Passed to :func:`compute_solid_min_vectors`.
+    bin_size, margin_bins, mask_other_solids : int, int, bool
+        Passed to :func:`compute_solid_min_vectors` (``mask_other_solids=True``
+        drops grid squares inside other solids from the field).
 
     Returns
     -------
@@ -1175,7 +1234,8 @@ def compute_expression_fold_factor(
         var_names = None
         for sid in _as_solid_id_list(solid_ids):
             sg, _, _ = compute_solid_min_vectors(
-                grid, solid, solid_id=sid, bin_size=bin_size, margin_bins=margin_bins
+                grid, solid, solid_id=sid, bin_size=bin_size, margin_bins=margin_bins,
+                mask_other_solids=mask_other_solids,
             )
             X = sg.X
             if issparse(X):
@@ -1242,6 +1302,7 @@ def compute_gene_uniformity(
     margin_bins: int = 15,
     radius_bins: Optional[np.ndarray] = None,
     angle_bins_deg: Optional[np.ndarray] = None,
+    mask_other_solids: bool = False,
 ) -> pd.DataFrame:
     """
     Per-gene, per-distance-bin uniformity for one solid group (a single
@@ -1275,8 +1336,9 @@ def compute_gene_uniformity(
         :func:`compute_expression_fold_factor`, to correct for a systematic
         total-expression offset against another group being compared (see
         :func:`compute_gene_uniformity_pair`).
-    bin_size, margin_bins : int
-        Passed to :func:`compute_solid_min_vectors`.
+    bin_size, margin_bins, mask_other_solids : int, int, bool
+        Passed to :func:`compute_solid_min_vectors` (``mask_other_solids=True``
+        drops grid squares inside other solids from the field).
     radius_bins, angle_bins_deg : np.ndarray or None
         Histogram bin edges; default to the same values used elsewhere in
         this module (``np.arange(-150, 310, 10)`` / ``np.arange(-180, 181, 30)``).
@@ -1299,7 +1361,8 @@ def compute_gene_uniformity(
     gene_sets = []
     for sid in _as_solid_id_list(solid_ids):
         sg, mv, _ = compute_solid_min_vectors(
-            grid, solid, solid_id=sid, bin_size=bin_size, margin_bins=margin_bins
+            grid, solid, solid_id=sid, bin_size=bin_size, margin_bins=margin_bins,
+            mask_other_solids=mask_other_solids,
         )
         subsets.append((sg, mv))
         gene_sets.append(set(sg.var_names))
@@ -1371,6 +1434,7 @@ def compute_gene_uniformity_pair(
     margin_bins: int = 15,
     radius_bins: Optional[np.ndarray] = None,
     angle_bins_deg: Optional[np.ndarray] = None,
+    mask_other_solids: bool = False,
 ) -> Tuple[pd.DataFrame, pd.DataFrame, float]:
     """
     Per-gene uniformity for two solid groups, on a comparable expression
@@ -1390,7 +1454,7 @@ def compute_gene_uniformity_pair(
         solid_ids_b=12``. See :func:`compute_gene_uniformity`'s
         ``solid_ids`` for how to find these numbers.
     dist_bins, genes, n_ref, bin_size, margin_bins, radius_bins,
-    angle_bins_deg : see :func:`compute_gene_uniformity`.
+    angle_bins_deg, mask_other_solids : see :func:`compute_gene_uniformity`.
     correct_expression : bool
         Apply the fold-factor correction described above.
 
@@ -1408,7 +1472,8 @@ def compute_gene_uniformity_pair(
     n_scale_a, n_scale_b, k = 1.0, 1.0, 1.0
     if correct_expression:
         k = compute_expression_fold_factor(
-            grid, solid, ids_a, ids_b, bin_size=bin_size, margin_bins=margin_bins
+            grid, solid, ids_a, ids_b, bin_size=bin_size, margin_bins=margin_bins,
+            mask_other_solids=mask_other_solids,
         )
         if k >= 1:
             n_scale_a = k
@@ -1419,6 +1484,7 @@ def compute_gene_uniformity_pair(
         dist_bins=dist_bins, genes=genes, n_ref=n_ref,
         bin_size=bin_size, margin_bins=margin_bins,
         radius_bins=radius_bins, angle_bins_deg=angle_bins_deg,
+        mask_other_solids=mask_other_solids,
     )
     wu_a = compute_gene_uniformity(grid, solid, ids_a, n_scale=n_scale_a, **common_kwargs)
     wu_b = compute_gene_uniformity(grid, solid, ids_b, n_scale=n_scale_b, **common_kwargs)
@@ -1467,6 +1533,7 @@ def plot_gene_uniformity_scatter(
     point_size: float = 30,
     color_up: str = "#e6194b",
     color_down: str = "#4363d8",
+    label_fontsize: float = 14,
     ax=None,
 ) -> Tuple[plt.Axes, List[str]]:
     """
@@ -1487,6 +1554,8 @@ def plot_gene_uniformity_scatter(
     n_annotate : int
         Number of most-divergent genes to label on *each* side of the
         diagonal.
+    label_fontsize : float
+        Font size of the gene-name labels.
     ax : matplotlib.axes.Axes or None
         Draw into an existing axes instead of creating a new figure.
 
@@ -1522,7 +1591,7 @@ def plot_gene_uniformity_scatter(
     ann_idx = np.concatenate([top_above, top_below])
     ann_genes = [common[i] for i in ann_idx]
 
-    texts = [ax.text(x[i], y[i], common[i], fontsize=14) for i in ann_idx]
+    texts = [ax.text(x[i], y[i], common[i], fontsize=label_fontsize) for i in ann_idx]
     adjust_text(
         texts, ax=ax,
         arrowprops=dict(arrowstyle="-", color="gray", lw=0.5),
@@ -1662,6 +1731,13 @@ def plot_deg_volcano(
     ax.axhline(-np.log10(sig_padj), color="black", lw=1.0, ls="--")
     ax.axvline(sig_lfc, color="black", lw=1.0, ls="--")
     ax.axvline(-sig_lfc, color="black", lw=1.0, ls="--")
+
+    # headroom so gene labels near the top / left / right edges stay inside the frame
+    x_lo, x_hi = float(lfc.min()), float(lfc.max())
+    x_pad = 0.15 * (x_hi - x_lo)
+    y_hi = float(logp.max())
+    ax.set_xlim(x_lo - x_pad, x_hi + x_pad)
+    ax.set_ylim(-0.04 * y_hi, 1.18 * y_hi)
 
     top_label = deg_df[up | down].nlargest(n_annotate, "-log10padj")
     texts = [

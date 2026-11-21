@@ -13,7 +13,10 @@ from skbio.stats.ordination import pcoa
 import plotly.express as px
 
 from .preparation.choose_roi import extract_roi, contour_regions
-from .preparation.scomv_calc_vector import compute_min_vectors_polar
+from .preparation.scomv_calc_vector import (
+    compute_min_vectors_polar, flatten_min_vectors, polar_hist_for_expression,
+)
+from .polar_plot import plot_polar_heatmap
 
 
 # =========================================================
@@ -144,6 +147,7 @@ class SCOMVPipeline:
 
         polar_counts_list: List[np.ndarray] = []
         selected_genes: List[str] = []
+        flat = flatten_min_vectors(min_vector_df.iloc[:n_cells])
 
         for n in range(n_genes):
             gene_name = adata_grid.var.index[n]
@@ -164,53 +168,22 @@ class SCOMVPipeline:
                 else:
                     continue
 
-            gene_angles = []
-            gene_radiis = []
-            gene_weights = []
-
-            for i in range(n_cells):
-                # Cast to int for compatibility with original code; use float if you want normalized values
-                e = int(expr[i])
-                if e == 0:
-                    continue
-
-                angles = min_vector_df["angle"].iloc[i]
-                radiis = min_vector_df["radii"].iloc[i]
-                n_vecs = len(angles)
-                if n_vecs == 0:
-                    continue
-
-                w = e / n_vecs
-                for ang, rad in zip(angles, radiis):
-                    gene_angles.append(ang)
-                    gene_radiis.append(rad * bin_um)
-                    gene_weights.append(w)
-
-            if len(gene_angles) == 0:
+            # count cast with int(), split over tied vectors, normalized (same numbers as plt.hist2d)
+            counts = polar_hist_for_expression(expr, flat, self.radius_bins, self.angle_bins_deg, bin_um)
+            if counts is None:
                 continue
-
-            deg = np.degrees(gene_angles)
-            w = np.asarray(gene_weights, dtype=float)
-            w = w / w.sum()
-
-            fig = plt.figure(figsize=(6, 6)) if make_plots else plt.figure(figsize=(1, 1))
-            counts, _, _, img = plt.hist2d(
-                gene_radiis, deg,
-                bins=[self.radius_bins, self.angle_bins_deg],
-                weights=w,
-                cmap="viridis"
-            )
 
             if make_plots:
                 max_val = np.max(counts) if counts.size else 0
-                if max_val > 0:
-                    img.set_clim(0, max_val * float(clim_ratio))
-                plt.title(f"{gene_name} (n={total_n})")
+                fig, ax = plt.subplots(figsize=(6, 6), subplot_kw={"projection": "polar"})
+                plot_polar_heatmap(
+                    counts, self.radius_bins, self.angle_bins_deg, ax=ax, cmap="viridis", vmin=0,
+                    vmax=max_val * float(clim_ratio) if max_val > 0 else None,
+                    cbar_label="Density", title=f"{gene_name} (n={total_n})",
+                )
                 plt.tight_layout()
                 plt.show()
-
-            plt.clf()
-            plt.close(fig)
+                plt.close(fig)
 
             selected_genes.append(gene_name)
             polar_counts_list.append(counts)

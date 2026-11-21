@@ -1,6 +1,6 @@
 """Top-level package for SpatialCompassV."""
 __author__ = "Ryosuke Nomura"
-__version__ = "0.1.1"
+__version__ = "0.1.6"
 
 # --- Public API (entry points) ---
 from .cell_pipeline import CellPolarPipeline
@@ -8,6 +8,8 @@ from .gene_pipeline import SCOMVPipeline
 from .spatial_deg import Spatial_DEG
 from .dendrogram import dendrogram2newick
 from .plot_3d import plot_3d
+from .polar_plot import plot_polar_heatmap
+from .preparation.io import save_preprocessed, load_preprocessed
 from .peripheral_score import (
     IMMUNE_BLOOD_MARKERS,
     compute_peripheral_score,
@@ -23,6 +25,9 @@ __all__ = [
     "Spatial_DEG",
     "dendrogram2newick",
     "plot_3d",
+    "plot_polar_heatmap",
+    "save_preprocessed",
+    "load_preprocessed",
     "IMMUNE_BLOOD_MARKERS",
     "compute_peripheral_score",
     "rank_genes_by_peripheral_score",

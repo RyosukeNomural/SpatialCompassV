@@ -12,6 +12,7 @@ from skbio.stats.ordination import pcoa
 import plotly.express as px
 from .preparation.choose_roi import extract_roi, contour_regions
 from .preparation.scomv_calc_vector import compute_min_vectors_polar
+from .polar_plot import plot_polar_heatmap
 
 
 def plot_gene_polar_hist2d(
@@ -28,10 +29,25 @@ def plot_gene_polar_hist2d(
     ylim: Tuple[float, float] = (-180, 180),
     show_grid: bool = True,
     grid_kwargs: Optional[dict] = None,
+    style: str = "polar",
+    polar_kwargs: Optional[dict] = None,
+    dpi: Optional[int] = None,
+    show: bool = True,
 ):
     """
     Plot a polar 2D histogram weighted by gene expression in subset_grid.X.
     min_vector_df is assumed to be aligned with subset_grid (iloc-compatible order).
+
+    style : "polar" (default) draws the histogram as a filled polar map
+        (``scomv.polar_plot.plot_polar_heatmap``; extra options via
+        ``polar_kwargs``; the dashed circle is the boundary, radius 0).
+        "rect" draws the previous radius x angle rectangle (uses xlim, ylim,
+        show_grid, grid_kwargs).
+    dpi : int or None
+        Figure resolution (None: matplotlib default).
+    show : bool
+        Call ``plt.show()``. Set False to adjust the figure (``plt.gcf()``)
+        before showing it.
 
     Returns
     -------
@@ -99,18 +115,33 @@ def plot_gene_polar_hist2d(
     gene_weights = np.asarray(gene_weights, dtype=float)
     gene_weights = gene_weights / gene_weights.sum()
 
-    # plot
-    plt.figure(figsize=figsize)
-    A_counts, xedges, yedges, img = plt.hist2d(
+    if style not in ("polar", "rect"):
+        raise ValueError(f"style must be 'polar' or 'rect', got {style!r}")
+
+    A_counts, _, _ = np.histogram2d(
         gene_radiis, degree_list,
         bins=[radius_bins, angle_bins_deg],
         weights=gene_weights,
-        cmap=cmap
     )
-
     max_val = np.max(A_counts) if A_counts.size else 0
-    if max_val > 0 and clim_ratio is not None:
-        img.set_clim(0, max_val * float(clim_ratio))
+    vmax = max_val * float(clim_ratio) if (max_val > 0 and clim_ratio is not None) else None
+
+    if style == "polar":
+        fig, ax = plt.subplots(figsize=figsize, dpi=dpi, subplot_kw={"projection": "polar"})
+        kw = dict(cmap=cmap, vmin=0, vmax=vmax, cbar_label="Density",
+                  title=f"{end_gene} (n = {total_n})")
+        kw.update(polar_kwargs or {})
+        plot_polar_heatmap(A_counts, radius_bins, angle_bins_deg, ax=ax, **kw)
+        plt.tight_layout()
+        if show:
+            plt.show()
+        return A_counts, total_n, N
+
+    # style == "rect"
+    plt.figure(figsize=figsize, dpi=dpi)
+    img = plt.pcolormesh(radius_bins, angle_bins_deg, A_counts.T, cmap=cmap)
+    if vmax is not None:
+        img.set_clim(0, vmax)
 
     cbar = plt.colorbar(img)
     cbar.set_label("Density", fontsize=15)
@@ -128,7 +159,8 @@ def plot_gene_polar_hist2d(
 
     plt.title(f"{end_gene} (n = {total_n})", fontsize=20)
     plt.tight_layout()
-    plt.show()
+    if show:
+        plt.show()
 
     return A_counts, total_n, N
 

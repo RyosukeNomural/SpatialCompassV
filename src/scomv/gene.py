@@ -11,126 +11,14 @@ import skbio
 from skbio.stats.ordination import pcoa
 import plotly.express as px
 from .preparation.choose_roi import extract_roi, contour_regions
-from .preparation.scomv_calc_vector import compute_min_vectors_polar
+from .preparation.scomv_calc_vector import (
+    compute_min_vectors_polar, flatten_min_vectors, polar_hist_for_expression,
+)
+from .gene_view_tool import plot_gene_polar_hist2d  # noqa: F401  (re-export)
+from .polar_plot import plot_polar_heatmap
 
 
-def plot_gene_polar_hist2d(
-    subset_grid,
-    min_vector_df,
-    gene: str,
-    bin_size_um: int = 10,
-    radius_bins: Optional[np.ndarray] = None,
-    angle_bins_deg: Optional[np.ndarray] = None,
-    cmap: str = "viridis",
-    clim_ratio: float = 0.25,
-    figsize: Tuple[int, int] = (6, 6),
-    xlim: Tuple[float, float] = (-150, 300),
-    ylim: Tuple[float, float] = (-180, 180),
-    show_grid: bool = True,
-    grid_kwargs: Optional[dict] = None,
-):
-    """
-    Plot a polar 2D histogram weighted by gene expression in subset_grid.X.
-    min_vector_df is assumed to be aligned with subset_grid (iloc-compatible order).
-
-    Returns
-    -------
-    A_counts : np.ndarray
-    total_n : float
-        Total expression (sum)
-    gene_index : int
-    """
-
-    if radius_bins is None:
-        radius_bins = np.arange(-150, 310, 10)
-    if angle_bins_deg is None:
-        angle_bins_deg = np.arange(-180, 181, 30)
-    if grid_kwargs is None:
-        grid_kwargs = dict(which="major", color="white", linewidth=0.6, alpha=0.6)
-
-    # gene -> index
-    genes = list(subset_grid.var.index)
-    if gene not in genes:
-        raise ValueError(f"Gene '{gene}' not found in subset_grid.var.index")
-    N = genes.index(gene)
-
-    # expression vector
-    expr = subset_grid.X[:, N]
-    if hasattr(expr, "toarray"):
-        expr = expr.toarray().ravel()
-    else:
-        expr = np.asarray(expr).ravel()
-
-    total_n = int(expr.sum())
-    end_gene = subset_grid.var.index[N]
-    print(f"{end_gene}: n={total_n}")
-
-    gene_angles = []
-    gene_radiis = []
-    gene_weights = []
-
-    # collect weighted vectors
-    for i, expression in enumerate(expr):
-        # do NOT cast to int (keep normalized values valid)
-        if expression <= 0:
-            continue
-
-        angles = min_vector_df["angle"].iloc[i]
-        radiis = min_vector_df["radii"].iloc[i]
-        n_vecs = len(angles)
-        if n_vecs == 0:
-            continue
-
-        w = float(expression) / n_vecs
-
-        for ang, rad in zip(angles, radiis):
-            gene_angles.append(ang)
-            gene_radiis.append(rad * bin_size_um)
-            gene_weights.append(w)
-
-    if len(gene_angles) == 0:
-        raise ValueError(
-            "No vectors collected (expression nearly zero or index mismatch "
-            "between min_vector_df and subset_grid)"
-        )
-
-    degree_list = np.degrees(gene_angles)
-
-    gene_weights = np.asarray(gene_weights, dtype=float)
-    gene_weights = gene_weights / gene_weights.sum()
-
-    # plot
-    plt.figure(figsize=figsize)
-    A_counts, xedges, yedges, img = plt.hist2d(
-        gene_radiis, degree_list,
-        bins=[radius_bins, angle_bins_deg],
-        weights=gene_weights,
-        cmap=cmap
-    )
-
-    max_val = np.max(A_counts) if A_counts.size else 0
-    if max_val > 0 and clim_ratio is not None:
-        img.set_clim(0, max_val * float(clim_ratio))
-
-    cbar = plt.colorbar(img)
-    cbar.set_label("Density", fontsize=15)
-    cbar.ax.tick_params(labelsize=12)
-
-    plt.xlabel("Radius", fontsize=15)
-    plt.ylabel("Angle", fontsize=15)
-    plt.xlim(*xlim)
-    plt.ylim(*ylim)
-    plt.yticks(np.arange(-180, 181, 30), fontsize=13)
-    plt.xticks(fontsize=13)
-
-    if show_grid:
-        plt.grid(True, **grid_kwargs)
-
-    plt.title(f"{end_gene} (n = {total_n})", fontsize=20)
-    plt.tight_layout()
-    plt.show()
-
-    return A_counts, total_n, N
+# Same function as scomv.gene_view_tool (kept here for backward compatibility).
 
 
 # ----------------------------
@@ -253,6 +141,7 @@ def build_polar_distributions_for_genes(
 
     polar_counts_list: List[np.ndarray] = []
     selected_genes: List[str] = []
+    flat = flatten_min_vectors(min_vector_df.iloc[:n_cells])
 
     for n in range(n_genes):
         gene_name = adata_grid.var.index[n]
@@ -275,53 +164,22 @@ def build_polar_distributions_for_genes(
                 # Exclude genes missing from Moran's I results
                 continue
 
-        gene_angles = []
-        gene_radiis = []
-        gene_weights = []
-
-        for i in range(n_cells):
-            e = int(expr[i])
-            if e == 0:
-                continue
-
-            angles = min_vector_df["angle"].iloc[i]
-            radiis = min_vector_df["radii"].iloc[i]
-            n_vecs = len(angles)
-            if n_vecs == 0:
-                continue
-
-            w = e / n_vecs
-            for ang, rad in zip(angles, radiis):
-                gene_angles.append(ang)
-                gene_radiis.append(rad * bin_size_um)
-                gene_weights.append(w)
-
-        if len(gene_angles) == 0:
+        # count cast with int(), split over tied vectors, normalized (same numbers as plt.hist2d)
+        counts = polar_hist_for_expression(expr, flat, radius_bins, angle_bins_deg, bin_size_um)
+        if counts is None:
             continue
-
-        deg = np.degrees(gene_angles)
-        w = np.asarray(gene_weights, dtype=float)
-        w = w / w.sum()
-
-        # hist2d counts
-        fig = plt.figure(figsize=(6, 6)) if make_plots else plt.figure(figsize=(1, 1))
-        counts, xedges, yedges, img = plt.hist2d(
-            gene_radiis, deg,
-            bins=[radius_bins, angle_bins_deg],
-            weights=w,
-            cmap="viridis"
-        )
 
         if make_plots:
             max_val = np.max(counts) if counts.size else 0
-            if max_val > 0:
-                img.set_clim(0, max_val * float(clim_ratio))
-            plt.title(f"{gene_name} (n={total_n})")
+            fig, ax = plt.subplots(figsize=(6, 6), subplot_kw={"projection": "polar"})
+            plot_polar_heatmap(
+                counts, radius_bins, angle_bins_deg, ax=ax, cmap="viridis", vmin=0,
+                vmax=max_val * float(clim_ratio) if max_val > 0 else None,
+                cbar_label="Density", title=f"{gene_name} (n={total_n})",
+            )
             plt.tight_layout()
             plt.show()
-
-        plt.clf()
-        plt.close(fig)
+            plt.close(fig)
 
         selected_genes.append(gene_name)
         polar_counts_list.append(counts)

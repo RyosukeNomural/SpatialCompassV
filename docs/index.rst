@@ -35,4 +35,5 @@ Overview
    installation
    api
    tutorials
+   changelog
   

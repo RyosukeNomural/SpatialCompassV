@@ -383,6 +383,7 @@ def cluster_genes_by_pcoa(
     min_cluster_size: int = 12,
     cluster_selection_method: str = "eom",
     cluster_selection_epsilon: float = 0.0,
+    keep_noise: bool = False,
 ) -> Tuple[np.ndarray, Dict[int, Dict]]:
     """
     Cluster genes by (PC1, PC2, *extra_axes) using HDBSCAN, after z-scoring
@@ -440,12 +441,17 @@ def cluster_genes_by_pcoa(
         less than this distance (in the standardized feature space) — a
         straightforward knob to pull ``"leaf"`` back from over-splitting
         without losing its finer granularity. 0.0 (default) = no merging.
+    keep_noise : bool
+        If True, HDBSCAN noise genes are not soft-assigned: they keep label
+        -1 ("unclassified") and are left out of ``cluster_summary``. Default
+        False (every gene is assigned to its most probable cluster, even when
+        that membership is weak).
 
     Returns
     -------
     labels : np.ndarray
         Cluster id per gene in ``genes`` order (0-indexed, renumbered by
-        ascending mean PC1; no -1 noise ids remain).
+        ascending mean PC1; no -1 noise ids remain unless ``keep_noise``).
     cluster_summary : dict[int, dict]
         Per cluster: "n", "pc1", "pc2", one mean-per-axis entry keyed by
         each name in ``extra_axes``, and "genes".
@@ -485,11 +491,13 @@ def cluster_genes_by_pcoa(
         prediction_data=True,
     )
     raw_labels = clusterer.fit_predict(feat_sc).copy()
-    raw_labels = _soft_assign_noise(raw_labels, clusterer)
+    if not keep_noise:
+        raw_labels = _soft_assign_noise(raw_labels, clusterer)
 
-    unique_cids = sorted(set(raw_labels))
+    unique_cids = sorted(set(raw_labels) - {-1})
     order = sorted(unique_cids, key=lambda c: pc1[raw_labels == c].mean())
     remap = {cid: new_i for new_i, cid in enumerate(order)}
+    remap[-1] = -1
     labels = np.array([remap[c] for c in raw_labels])
 
     cluster_summary: Dict[int, Dict] = {}
@@ -940,6 +948,9 @@ def plot_go_enrichment_per_cluster(
     suptitle_fontsize: float = 18,
     hspace: float = 0.6,
     suptitle: Optional[str] = None,
+    wrap_width: Optional[int] = None,
+    height_by_terms: bool = False,
+    xtick_fontsize: Optional[float] = None,
 ):
     """
     Horizontal bar chart of top enriched GO terms per cluster, from
@@ -968,6 +979,23 @@ def plot_go_enrichment_per_cluster(
         large ``title_fontsize``/``axis_fontsize``, since
         ``tight_layout()`` alone doesn't reserve enough room for big
         fonts).
+    wrap_width : int or None
+        Wrap GO term labels longer than this many characters onto
+        several lines. None (default) keeps each term on one line.
+
+    xtick_fontsize : float or None
+        Font size of the x-axis tick labels. None (default) uses
+        ``term_fontsize``.
+    height_by_terms : bool
+        If True, each panel's frame height is proportional to its number
+        of terms (bars keep the same thickness everywhere) and panels in
+        the same row are centered vertically. With ``n_cols=1`` the row
+        heights themselves follow the number of terms. If False (default), every
+        panel has the same frame and fewer terms leave empty slots.
+
+    With ``height_by_terms=False``, every panel's y-axis spans ``top_n`` bar slots (filled from the top),
+    so bars have the same thickness across panels even when a cluster has
+    fewer than ``top_n`` significant terms.
 
     Returns
     -------
@@ -975,6 +1003,7 @@ def plot_go_enrichment_per_cluster(
         None if no cluster has any significant term.
     """
     import math
+    import textwrap
 
     nonempty = [cid for cid, df in results.items() if not df.empty]
     if not nonempty:
@@ -986,21 +1015,38 @@ def plot_go_enrichment_per_cluster(
 
     ncols = min(len(nonempty), n_cols)
     nrows = math.ceil(len(nonempty) / ncols)
-    fig, axes = plt.subplots(nrows, ncols, figsize=(panel_size[0] * ncols, panel_size[1] * nrows),
-                              dpi=100, squeeze=False)
+    n_terms_of = {cid: len(results[cid].head(top_n)) for cid in nonempty}
+    stacked = height_by_terms and ncols == 1
+    if stacked:
+        # one column: row heights proportional to the number of terms
+        bar_in = panel_size[1] / top_n
+        ratios = [n_terms_of[cid] for cid in nonempty]
+        fig_h = bar_in * sum(ratios) + 2.0 * nrows
+        fig, axes = plt.subplots(nrows, 1, figsize=(panel_size[0], fig_h), dpi=100, squeeze=False,
+                                 gridspec_kw={"height_ratios": ratios})
+    else:
+        fig, axes = plt.subplots(nrows, ncols, figsize=(panel_size[0] * ncols, panel_size[1] * nrows),
+                                  dpi=100, squeeze=False)
 
     for i, cid in enumerate(nonempty):
         row, col = divmod(i, ncols)
         ax = axes[row][col]
         df_top = results[cid].head(top_n)
         terms = df_top["Term"].str.split(r" \(GO:").str[0]
+        if wrap_width:
+            terms = terms.apply(lambda t: textwrap.fill(t, width=wrap_width))
         vals = df_top["Adjusted P-value"].apply(lambda x: -np.log10(x))
         color = colors[cid]
         ax.barh(range(len(terms)), vals.values[::-1], color=color, alpha=0.85)
         ax.set_yticks(range(len(terms)))
         ax.set_yticklabels(terms.values[::-1], fontsize=term_fontsize)
+        if height_by_terms:
+            ax.set_ylim(-0.5, len(terms) - 0.5)
+        else:
+            # top_n slots in every panel -> same bar thickness; bars fill from the top
+            ax.set_ylim(len(terms) - top_n - 0.5, len(terms) - 0.5)
         ax.set_xlabel("-log10(adjusted p-value)", fontsize=axis_fontsize)
-        ax.tick_params(axis="x", labelsize=term_fontsize)
+        ax.tick_params(axis="x", labelsize=term_fontsize if xtick_fontsize is None else xtick_fontsize)
         ax.axvline(-np.log10(padj_thresh), color="gray", ls="--", lw=0.8)
         ax.set_title(f"{cid}", fontsize=title_fontsize, fontweight="bold", color=color)
 
@@ -1012,5 +1058,15 @@ def plot_go_enrichment_per_cluster(
         fig.suptitle(suptitle, fontsize=suptitle_fontsize, y=1.01)
     fig.tight_layout()
     fig.subplots_adjust(hspace=hspace)
+
+    if height_by_terms and not stacked:
+        # shrink each frame to n_terms / top_n of the slot, centered vertically
+        for i, cid in enumerate(nonempty):
+            row, col = divmod(i, ncols)
+            ax = axes[row][col]
+            n_terms = len(results[cid].head(top_n))
+            pos = ax.get_position()
+            new_h = pos.height * n_terms / top_n
+            ax.set_position([pos.x0, pos.y0 + (pos.height - new_h) / 2, pos.width, new_h])
 
     return fig

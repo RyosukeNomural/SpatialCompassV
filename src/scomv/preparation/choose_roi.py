@@ -39,12 +39,12 @@ def extract_roi(
     # xy_bins is offset from grid.shortest.index by floor(origin / bin_size) and
     # filtered_shortest silently selects the wrong grid cells whenever the grid
     # origin isn't at (0, 0) (e.g. any non-Xenium-tutorial dataset).
-    x0 = grid.uns["grid_xedges"][0]
-    y0 = grid.uns["grid_yedges"][0]
-    xy_bins = subset_grid.obs.apply(
-        lambda r: (int((r["imagecol"] - x0) // bin_size), int((r["imagerow"] - y0) // bin_size)),
-        axis=1
-    ).tolist()
+    # (column, row) from the square names: the same index as grid.shortest
+    # (see scomv.preparation.grid_index; binning (imagecol - x0) // bin_size
+    # drifts by one square once the width difference adds up).
+    from scomv.preparation.grid_index import grid_square_ij
+    gi, gj = grid_square_ij(grid, obs_names=subset_grid.obs_names)
+    xy_bins = list(zip(gi.tolist(), gj.tolist()))
 
     filtered_shortest = grid.shortest[grid.shortest.index.isin(xy_bins)]
     return subset_grid, filtered_shortest, xy_bins

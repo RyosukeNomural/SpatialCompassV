@@ -35,6 +35,7 @@ class CellPolarPipeline:
     coord_col: str = "coord_tuple"
     unlabeled_name: str = "Unlabeled"
     min_cells: int = 30
+    grid: Any = None          # stlearn grid; if given, cells are placed in grid squares with its edges
 
     # ---- polar hist settings ----
     bin_size_um: int = 10
@@ -69,8 +70,9 @@ class CellPolarPipeline:
         coord_col: Optional[str] = None,
     ) -> pd.DataFrame:
         """
-        Filter cells within the ROI and add coord_tuple as
-        (floor(x/bin), floor(y/bin)).
+        Filter cells within the ROI and add coord_tuple: the (column, row) of
+        the grid square each cell is in (with ``self.grid``'s edges if a grid
+        is given, otherwise (floor(x/bin), floor(y/bin))).
         """
         if bin_size is None:
             bin_size = self.bin_size
@@ -85,10 +87,16 @@ class CellPolarPipeline:
             (df.iloc[:, self.y_col] > min_y) & (df.iloc[:, self.y_col] < max_y)
         ].copy()
 
-        filtered_df[coord_col] = list(zip(
-            np.floor(filtered_df.iloc[:, self.x_col] / bin_size).astype(int),
-            np.floor(filtered_df.iloc[:, self.y_col] / bin_size).astype(int),
-        ))
+        if self.grid is not None:
+            from scomv.preparation.grid_index import points_to_grid_ij
+            gi, gj = points_to_grid_ij(filtered_df.iloc[:, self.x_col].to_numpy(),
+                                       filtered_df.iloc[:, self.y_col].to_numpy(), self.grid)
+            filtered_df[coord_col] = list(zip(gi.tolist(), gj.tolist()))
+        else:
+            filtered_df[coord_col] = list(zip(
+                np.floor(filtered_df.iloc[:, self.x_col] / bin_size).astype(int),
+                np.floor(filtered_df.iloc[:, self.y_col] / bin_size).astype(int),
+            ))
 
         # Stabilize coord_tuple types (e.g., list -> tuple)
         filtered_df[coord_col] = filtered_df[coord_col].apply(lambda x: tuple(x))
@@ -334,6 +342,7 @@ class CellPolarPipeline:
         font_size: int = 18,
         rotation: int = 90,
         show_similarity: bool = True,  # True: display 1 - dist_df
+        cbar_fontsize: Optional[float] = None,  # colour-bar tick label size (None: seaborn default)
     ):
         if dist_df is None:
             if self.dist_df is None:
@@ -354,6 +363,8 @@ class CellPolarPipeline:
 
         g.ax_heatmap.set_xticklabels(g.ax_heatmap.get_xticklabels(), fontsize=font_size, rotation=rotation)
         g.ax_heatmap.set_yticklabels(g.ax_heatmap.get_yticklabels(), fontsize=font_size)
+        if cbar_fontsize is not None:
+            g.ax_cbar.tick_params(labelsize=cbar_fontsize)
 
         plt.show()
         return g

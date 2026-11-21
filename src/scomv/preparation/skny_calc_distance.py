@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 from matplotlib import colors as mcolors
 import cv2
 from PIL import Image
-import networkx as nx
+from scipy import sparse
+from scipy.sparse.csgraph import dijkstra
 
 
 # =========================================================
@@ -48,21 +49,31 @@ def calculate_distance(grid, pos_marker_ls, neg_marker_ls=None):
     N_COL = len(grid.uns["grid_xedges"]) - 1
 
     # --- Define positive grid (binary) ---
-    pos_series = sum([grid.to_df()[g] for g in pos_marker_ls])
-    pos_series = pd.Series([1 if v >= 1 else 0 for v in pos_series], index=pos_series.index)
+    def _marker_sum(genes):
+        return sum([pd.Series(grid.obs_vector(g), index=grid.obs_names) for g in genes])
+
+    def _binary(series):
+        return pd.Series(np.where(series.to_numpy() >= 1, 1, 0).astype(np.int64), index=series.index)
+
+    def _zero_to_minus_one(series):
+        v = series.to_numpy()
+        return pd.Series(np.where(v == 0, -1, v).astype(v.dtype), index=series.index)
+
+    pos_series = _binary(_marker_sum(pos_marker_ls))
 
     # --- Subtract negative grid if provided ---
     if neg_marker_ls is not None:
-        neg_series = sum([grid.to_df()[g] for g in neg_marker_ls])
-        neg_series = pd.Series([1 if v >= 1 else 0 for v in neg_series], index=neg_series.index)
-        pos_series = pos_series - neg_series
-        pos_series = pd.Series([-1 if v == 0 else v for v in pos_series], index=pos_series.index)
+        neg_series = _binary(_marker_sum(neg_marker_ls))
+        pos_series = _zero_to_minus_one(pos_series - neg_series)
     else:
-        pos_series = pd.Series([-1 if v == 0 else v for v in pos_series], index=pos_series.index)
+        pos_series = _zero_to_minus_one(pos_series)
 
     # --- Expand to all grids ---
     pos_series.name = "tumor_grid"
-    expected_index = [f"grid_{i+1}" for i in range(N_ROW * N_COL)]
+    # square names in column-major order; stlearn numbers them from 0 (older
+    # versions from 1) -- detected from the square centres, see grid_index.py
+    from scomv.preparation.grid_index import grid_index_names
+    expected_index = grid_index_names(grid)
     if set(expected_index) & set(pos_series.index):
         # obs names match "grid_N" format — use index-based merge
         df_grid_tumor = (
@@ -99,30 +110,20 @@ def calculate_distance(grid, pos_marker_ls, neg_marker_ls=None):
     # - Avoid tight_layout=True (forces text bbox calculations)
     # - Keep output pixel size == (N_COL, N_ROW)
     # =========================================================
-    dpi = 100  # safe DPI
-    fig_w = N_COL / dpi
-    fig_h = N_ROW / dpi
-    fig, ax = plt.subplots(figsize=(fig_w, fig_h), dpi=dpi)  # tight_layout removed
-
-    cmap = plt.cm.viridis
+    # The image is the viridis colour of each grid square (vmin=0, vmax=1,
+    # values < 0 / NaN black), one pixel per square. It used to be rendered
+    # through a matplotlib figure of size N/100 inch at 100 dpi; that is only
+    # pixel-exact when N/100*100 rounds back to N (e.g. 987/100*100 =
+    # 986.99... gives a 986-px Agg canvas, and the resize back to 987 px
+    # shifted the whole mask by one square; HiDPI backends differ again).
+    # Mapping the colours directly gives the same image as an exact render,
+    # independent of the matplotlib backend.
+    tumor_img = np.array(df_grid_tumor["tumor_grid"], dtype=float).reshape(N_COL, N_ROW).T
+    cmap = plt.get_cmap("viridis").copy()
     cmap.set_bad("black", 1.0)
     cmap.set_under(color="black")
-
-    ax.imshow(
-        np.array(df_grid_tumor["tumor_grid"]).reshape(N_COL, N_ROW).T,
-        cmap=cmap,
-        vmin=0,
-        vmax=1,
-        interpolation="nearest",
-    )
-    ax.axis("off")
-    fig.subplots_adjust(0, 0, 1, 1)  # no margins
-
-    # Convert figure to numpy image (RGBA -> BGR)
-    fig.canvas.draw()
-    img = np.array(fig.canvas.renderer.buffer_rgba())
-    img = cv2.cvtColor(img, cv2.COLOR_RGBA2BGR)
-    plt.close(fig)
+    rgba = cmap(mcolors.Normalize(vmin=0, vmax=1)(np.ma.masked_invalid(tumor_img)), bytes=True)
+    img = cv2.cvtColor(np.ascontiguousarray(rgba), cv2.COLOR_RGBA2BGR)
 
     grid.uns["marker"] = img.copy()
 
@@ -148,78 +149,60 @@ def calculate_distance(grid, pos_marker_ls, neg_marker_ls=None):
     img_color_with_contours = cv2.drawContours(img_med.copy(), contours_, -1, (0, 255, 0), 1)
     grid.uns["marker_delineation"] = img_color_with_contours
 
-    # --- Convert image to a graph (pixel adjacency) ---
+    # --- Pixel graph (8-neighborhood: 1 for edge neighbors, sqrt(2) for diagonals) ---
     image = cv2pil(img_color_with_contours)
     width, height = image.size
-    graph = nx.Graph()
+    rgb = np.asarray(image.convert("RGB"))  # (height, width, 3)
 
-    tumor_contour_pixel_ls = []
-    tumor_pixel_ls = []
-    edge_pixel_ls = []
+    ys, xs = np.mgrid[0:height, 0:width]
+    xs, ys = xs.ravel(), ys.ravel()
+    nodes_ls = list(zip(xs.tolist(), ys.tolist()))  # row-major, (x, y)
 
-    for y in range(height):
-        for x in range(width):
-            pixel_value = image.getpixel((x, y))
-            graph.add_node((x, y), color=pixel_value)
+    flat_rgb = rgb.reshape(-1, 3)
+    is_contour = np.all(flat_rgb == (0, 255, 0), axis=1)          # tumor contour pixels (green)
+    is_tumor = np.all(flat_rgb == (253, 231, 36), axis=1) & ~is_contour  # tumor pixels (viridis yellow)
+    is_edge = (ys == 0) | (ys == height - 1) | (xs == 0) | (xs == width - 1)
 
-            # Tumor contour pixels (green)
-            if pixel_value == (0, 255, 0):
-                tumor_contour_pixel_ls.append((x, y))
-            # Tumor pixels (viridis yellow-ish in rendered image)
-            elif pixel_value == (253, 231, 36):
-                tumor_pixel_ls.append((x, y))
-
-            if (y == 0) or (y == height - 1) or (x == 0) or (x == width - 1):
-                edge_pixel_ls.append((x, y))
-
-    nodes_ls = list(graph.nodes)
-
-    # Determine nodes inside contour polygons
-    inside_contour_ls = []
-    for node in nodes_ls:
-        for c in contours_:
-            if cv2.pointPolygonTest(c, node, False) == 1:
-                inside_contour_ls.append(node)
-                break
-
-    tumor_pixel_ls = [p for p in tumor_pixel_ls if p in inside_contour_ls]
-
-    # Add edges (4-neighborhood + diagonals)
-    for y in range(height):
-        for x in range(width):
-            current_node = (x, y)
-            neighbors = [(x, y - 1), (x, y + 1), (x - 1, y), (x + 1, y)]
-            for nb in neighbors:
-                if nb in graph.nodes:
-                    graph.add_edge(current_node, nb)
-
-            # Diagonals with Euclidean weights
-            if (x + 1) < width and (y + 1) < height:
-                node1 = (x, y)
-                node2 = (x + 1, y + 1)
-                d = math.sqrt((node1[0] - node2[0]) ** 2 + (node1[1] - node2[1]) ** 2)
-                graph.add_edge(node1, node2, weight=d)
-
-                node1 = (x + 1, y)
-                node2 = (x, y + 1)
-                d = math.sqrt((node1[0] - node2[0]) ** 2 + (node1[1] - node2[1]) ** 2)
-                graph.add_edge(node1, node2, weight=d)
+    # Tumor pixels must lie strictly inside a contour polygon (pointPolygonTest == 1).
+    # Only tumor pixels need the test, and only those inside a contour's bounding box.
+    tumor_idx = np.flatnonzero(is_tumor)
+    pending = np.ones(len(tumor_idx), dtype=bool)
+    tx, ty = xs[tumor_idx], ys[tumor_idx]
+    for c in contours_:
+        bx, by, bw, bh = cv2.boundingRect(c)
+        cand = np.flatnonzero(pending & (tx >= bx) & (tx < bx + bw) & (ty >= by) & (ty < by + bh))
+        for k in cand:
+            if cv2.pointPolygonTest(c, (int(tx[k]), int(ty[k])), False) == 1:
+                pending[k] = False
+    tumor_inside_idx = tumor_idx[~pending]
 
     # Remove contours that touch image edges (edge artifacts)
-    tumor_edge_contour_pixel_ls = list(set(tumor_contour_pixel_ls) & set(edge_pixel_ls))
-    tumor_pixel_ls = list(set(tumor_pixel_ls) | set(tumor_edge_contour_pixel_ls))
-    tumor_contour_pixel_ls = list(set(tumor_contour_pixel_ls) - set(tumor_edge_contour_pixel_ls))
+    edge_contour_idx = np.flatnonzero(is_contour & is_edge)
+    tumor_set_idx = np.union1d(tumor_inside_idx, edge_contour_idx)
+    source_idx = np.flatnonzero(is_contour & ~is_edge)
     # Fallback: if all contour pixels were at image edges, use them as sources anyway
-    if not tumor_contour_pixel_ls:
-        tumor_contour_pixel_ls = tumor_edge_contour_pixel_ls
+    if len(source_idx) == 0:
+        source_idx = edge_contour_idx
 
-    # --- Compute shortest distances from tumor surface ---
-    shortest_paths = nx.multi_source_dijkstra(
-        graph,
-        tumor_contour_pixel_ls,
-        cutoff=31,
-        weight="weight",
-    )
+    idx = np.arange(height * width).reshape(height, width)
+    sq2 = math.sqrt(2)
+    pairs = [
+        (idx[:, :-1], idx[:, 1:], 1.0),      # horizontal
+        (idx[:-1, :], idx[1:, :], 1.0),      # vertical
+        (idx[:-1, :-1], idx[1:, 1:], sq2),   # diagonal (x, y) - (x+1, y+1)
+        (idx[:-1, 1:], idx[1:, :-1], sq2),   # diagonal (x+1, y) - (x, y+1)
+    ]
+    rows = np.concatenate([a.ravel() for a, _, _ in pairs])
+    cols = np.concatenate([b.ravel() for _, b, _ in pairs])
+    wts = np.concatenate([np.full(a.size, w) for a, _, w in pairs])
+    graph = sparse.csr_matrix((wts, (rows, cols)), shape=(height * width, height * width))
+
+    # --- Compute shortest distances from tumor surface (cutoff 31 bins) ---
+    CUTOFF = 31
+    dist = dijkstra(graph, directed=False, indices=source_idx, min_only=True, limit=CUTOFF + 1e-6)
+    reached = np.isfinite(dist) & (dist <= CUTOFF)
+    shortest_paths = ({nodes_ls[i]: float(dist[i]) for i in np.flatnonzero(reached)},)
+    tumor_pixel_ls = [nodes_ls[i] for i in tumor_set_idx]
 
     df_shotest = pd.DataFrame.from_dict(shortest_paths[0], orient="index", columns=["euclidean"])
 
@@ -240,33 +223,28 @@ def calculate_distance(grid, pos_marker_ls, neg_marker_ls=None):
     grid.uns["shotest"] = None
 
     # --- Delineation (distance classes) ---
-    col_ls = []
-    for v in df_shotest["euclidean_round"]:
-        if v == 0:
-            col_ls.append((0, 255, 0))
-        elif v < 0:
-            col_ls.append((0, 255, 255))
-        else:
-            col_ls.append((0, 0, 0))
+    v = df_shotest["euclidean_round"].to_numpy()
 
-    col_arr = np.array(col_ls, dtype=np.uint8).reshape(N_ROW, N_COL, 3)
+    def _paint(conds, colors_):
+        out = np.zeros((len(v), 3), dtype=np.uint8)  # default black
+        done = np.zeros(len(v), dtype=bool)
+        for cnd, col in zip(conds, colors_):
+            m = cnd & ~done
+            out[m] = col
+            done |= cnd
+        return out.reshape(N_ROW, N_COL, 3)
+
+    with np.errstate(invalid="ignore"):
+        col_arr = _paint([v == 0, v < 0], [(0, 255, 0), (0, 255, 255)])
     grid.uns["marker_median_delineation"] = col_arr.copy()
 
     # --- Delineation at 30 µm intervals ---
-    col_ls = []
-    for v in df_shotest["euclidean_round"]:
-        if v == 0:
-            col_ls.append((0, 255, 0))
-        elif (v % 3 == 0) and (v > 0):
-            col_ls.append((0, 0, 255))
-        elif (v % 3 == 0) and (v < 0):
-            col_ls.append((0, 150, 255))
-        elif v < 0:
-            col_ls.append((0, 255, 255))
-        else:
-            col_ls.append((0, 0, 0))
-
-    col_arr = np.array(col_ls, dtype=np.uint8).reshape(N_ROW, N_COL, 3)
+    with np.errstate(invalid="ignore"):
+        m3 = np.mod(v, 3) == 0
+        col_arr = _paint(
+            [v == 0, m3 & (v > 0), m3 & (v < 0), v < 0],
+            [(0, 255, 0), (0, 0, 255), (0, 150, 255), (0, 255, 255)],
+        )
     grid.uns["shotest_30_delineation"] = col_arr.copy()
 
     # --- Discretize distance into regions ---
@@ -277,11 +255,10 @@ def calculate_distance(grid, pos_marker_ls, neg_marker_ls=None):
 
     region_counts = df_shotest.dropna().region.value_counts()
     for region_bin in region_counts[region_counts > 100].sort_index().index:
-        col_ls = []
-        for s in df_shotest["region"]:
-            col_ls.append((255, 255, 255) if s == region_bin else (0, 0, 0))
-
-        col_arr = np.array(col_ls, dtype=np.uint8).reshape(N_ROW, N_COL, 3)
+        m = (df_shotest["region"] == region_bin).to_numpy(dtype=bool, na_value=False)
+        col_arr = np.zeros((len(m), 3), dtype=np.uint8)
+        col_arr[m] = (255, 255, 255)
+        col_arr = col_arr.reshape(N_ROW, N_COL, 3)
         grid.uns[f"shotest_region_{region_bin}_delineation"] = col_arr
 
     setattr(grid, "shortest", df_shotest)
