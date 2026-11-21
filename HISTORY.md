@@ -1,5 +1,18 @@
 # History
 
+## 0.1.7 (2026-11-21)
+
+### Fixes
+
+* **`plot_3d`**: hovering over the 3D map no longer draws white contour lines on
+  the surfaces or black spike lines to the axes (Plotly's hover contour
+  highlight and axis spikes are now turned off). The hover tooltip is unchanged.
+
+### Documentation
+
+* Gene-analysis tutorial: removed the GO enrichment run without a background
+  gene set; only the run with this panel's genes as background is kept.
+
 ## 0.1.6 (2026-11-21)
 
 ### Fixes that change results (re-run analyses made with 0.1.5)
