@@ -12,6 +12,18 @@
   boxes (`solid.uns["solid_bbox"]`) that it uses; `individual_tumor_solid` is
   unchanged.
 
+### Changes that affect results (only with `mask_other_solids=True`)
+
+* **Other tumors are masked completely.** `mask_other_solids=True`
+  (`compute_solid_min_vectors`, `compute_per_solid_polar_counts`,
+  `compute_expression_fold_factor`, `compute_gene_uniformity(_pair)`) now also
+  removes the cavities (lumens) enclosed by the other solids and their outermost
+  rim just outside the boundary contour; before, only their interior squares
+  were removed, so lumens and rims were still counted as this solid's stroma.
+  The squares come from the solid label image, stored by `extract_tumor_solids`
+  as `solid.uns["solid_labels"]`. Results with the default
+  `mask_other_solids=False` are unchanged.
+
 ### Fixes
 
 * **`plot_3d`**: hovering over the 3D map no longer draws white contour lines on

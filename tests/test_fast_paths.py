@@ -186,3 +186,24 @@ def test_plot_tumor_solids_draws_sharp_ids():
     assert [t.get_text() for t in ax.texts] == [str(i) for i in range(1, stats.shape[0])]
     assert len(ax.patches) == stats.shape[0] - 1
     plt.close(ax.figure)
+
+
+def test_other_solid_squares_include_lumens():
+    # solid 2 is a ring with a 3x3 lumen; solid 1 is a separate block. Masking for solid 1 must drop
+    # the ring and its lumen, and never solid 1 itself.
+    from scomv.tumor_solid import _other_solid_squares
+    lab = np.zeros((12, 20), int)
+    lab[2:9, 2:9] = 2
+    lab[4:7, 4:7] = 0          # lumen of solid 2
+    lab[3:6, 13:17] = 1
+    idx = [(x, y) for y in range(lab.shape[0]) for x in range(lab.shape[1])]
+    solid = ad.AnnData(np.zeros((1, 1)))
+    solid.shortest = pd.DataFrame({"solid": [lab[y, x] if lab[y, x] else np.nan for x, y in idx]},
+                                  index=pd.Index(idx, tupleize_cols=False))
+    got = _other_solid_squares(solid, 1)
+    ring = {(x, y) for x, y in idx if lab[y, x] == 2}
+    lumen = {(x, y) for y in range(4, 7) for x in range(4, 7)}
+    assert got == ring | lumen
+    assert not got & {(x, y) for x, y in idx if lab[y, x] == 1}
+    # for solid 2 itself: only solid 1 is "other"
+    assert _other_solid_squares(solid, 2) == {(x, y) for x, y in idx if lab[y, x] == 1}

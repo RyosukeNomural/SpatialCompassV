@@ -71,6 +71,7 @@ from itertools import combinations
 from matplotlib.lines import Line2D
 from matplotlib.transforms import blended_transform_factory
 from scipy.cluster.hierarchy import fcluster, linkage
+from scipy import ndimage
 from scipy.sparse import issparse
 from scipy.stats import entropy as _scipy_entropy
 from scipy.stats import mannwhitneyu
@@ -267,6 +268,7 @@ def extract_tumor_solids(
     solid.uns["individual_tumor_solid"] = img_color
     solid.uns["tumor_mask_image"] = grid.uns["marker_delineation"].copy()   # BGR, without boxes / numbers
     solid.uns["solid_bbox"] = np.asarray(stats[:, :4], dtype=np.int64)      # (x, y, width, height); row = solid id, row 0 = background
+    solid.uns["solid_labels"] = np.asarray(labels, dtype=np.int32)          # label image (row = y bin, col = x bin); 0 = background
     setattr(solid, "shortest", df_shortest)
 
     return solid
@@ -390,6 +392,43 @@ def assign_solid_ids(
     return solid_ids
 
 
+def _other_solid_squares(solid, solid_id: int) -> set:
+    """
+    Grid squares (x_bin, y_bin) that belong to any solid other than ``solid_id``,
+    including the cavities (lumens) each of those solids encloses.
+
+    The solid squares come from the label image ``solid.uns["solid_labels"]``
+    (stored by :func:`extract_tumor_solids`; for objects made by older
+    versions, from ``solid.shortest["solid"]``, which lacks each solid's
+    outermost rim just outside the boundary contour). The holes of every solid
+    are filled one solid at a time, so a lumen is attributed to the solid that
+    surrounds it. Squares of ``solid_id`` itself are never returned. The
+    filled label image is cached on the ``solid`` object.
+    """
+    filled = getattr(solid, "_filled_solid_labels", None)
+    if filled is None:
+        if "solid_labels" in solid.uns:
+            img = np.asarray(solid.uns["solid_labels"], dtype=np.int64)
+        else:
+            lab = solid.shortest["solid"].fillna(0).astype(int)
+            lab = lab[lab > 0]
+            xs = np.fromiter((t[0] for t in lab.index), dtype=np.int64, count=len(lab))
+            ys = np.fromiter((t[1] for t in lab.index), dtype=np.int64, count=len(lab))
+            img = np.zeros((ys.max() + 1, xs.max() + 1), dtype=np.int64)
+            img[ys, xs] = lab.to_numpy()
+        filled = np.zeros_like(img)
+        for sid in np.unique(img[img > 0]):
+            yy, xx = np.nonzero(img == sid)
+            y0, y1, x0, x1 = yy.min(), yy.max() + 1, xx.min(), xx.max() + 1
+            holes = ndimage.binary_fill_holes(img[y0:y1, x0:x1] == sid)
+            region = filled[y0:y1, x0:x1]
+            region[holes & (region == 0)] = sid
+        filled[img > 0] = img[img > 0]          # every solid keeps its own squares
+        setattr(solid, "_filled_solid_labels", filled)
+    yy, xx = np.nonzero((filled != 0) & (filled != solid_id))
+    return set(zip(xx.tolist(), yy.tolist()))
+
+
 def compute_solid_min_vectors(
     grid,
     solid,
@@ -417,8 +456,10 @@ def compute_solid_min_vectors(
     margin_bins : int
         Number of extra grid bins to include around the solid's bounding box.
     mask_other_solids : bool
-        If True, drop grid squares that lie inside another solid (the
-        interior of any other labelled solid in ``solid.shortest``). Distances
+        If True, drop grid squares that lie inside another solid: the
+        squares of any other labelled solid (label image of
+        :func:`extract_tumor_solids`) and the cavities (lumens) that solid
+        encloses. Distances
         and angles are still measured from this solid's own boundary; only
         the other tumors' epithelium is removed from the field, so it is not
         counted as this solid's surrounding stroma. Stroma between tumors is
@@ -464,8 +505,7 @@ def compute_solid_min_vectors(
         lambda t: xmin_b <= t[0] <= xmax_b and ymin_b <= t[1] <= ymax_b
     )
     if mask_other_solids:
-        other_solid = df_sh["solid"].fillna(0)
-        other_sq = set(df_sh.index[(other_solid != 0) & (other_solid != solid_id)])
+        other_sq = _other_solid_squares(solid, solid_id)
         in_box &= ~bin_series.apply(lambda t: t in other_sq)
     subset_grid = grid[in_box].copy()
 
@@ -565,8 +605,7 @@ def compute_per_solid_polar_counts(
             # drop only the cells that sit inside another solid (same squares as
             # compute_solid_min_vectors removes); other cells are kept exactly as
             # in the default path, so the cell count changes only by the masking
-            sh_solid = solid.shortest["solid"].fillna(0)
-            other_sq = set(solid.shortest.index[(sh_solid != 0) & (sh_solid != sid)])
+            other_sq = _other_solid_squares(solid, sid)
             cell_sub = cell_sub[~cell_sub["coord_tuple"].isin(other_sq)]
 
         for ct in cell_types:
