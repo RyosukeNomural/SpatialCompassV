@@ -41,7 +41,7 @@ Main Features
       .. image:: _static/images/atera_analysis.png
          :width: 220px
 
-      **Whole-Transcriptome Tumor Analysis**
+      **Whole-Transcriptome ST Analysis (Atera)**
 
 
 
