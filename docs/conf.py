@@ -24,12 +24,20 @@ extensions = [
    # 'myst_parser',
     'myst_nb',
     'sphinx_design',
+    'sphinx_copybutton',   # copy button on every code block
 ]
 
 nb_execution_mode = "off"
 
 # render $...$ / $$...$$ math in notebook markdown (MathJax)
 myst_enable_extensions = ["dollarmath", "amsmath"]
+
+# copy button: strip Python / shell prompts so the copied text runs as is
+copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: "
+copybutton_prompt_is_regexp = True
+copybutton_only_copy_prompt_lines = False
+# code blocks only: no button on notebook outputs (printed text, tables)
+copybutton_selector = "div:not(.output) > div.highlight pre"
 
 # source_suffix = {
      #".rst": "restructuredtext",

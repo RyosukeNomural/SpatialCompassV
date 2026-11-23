@@ -12,4 +12,5 @@ myst-parser
 myst_nb
 sphinx-rtd-theme
 sphinx-design
+sphinx-copybutton
 
