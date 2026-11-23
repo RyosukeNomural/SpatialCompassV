@@ -1,6 +1,16 @@
 # History
 
-## 0.1.7 (2026-11-21)
+## 0.1.7 (2026-11-23)
+
+### New
+
+* **`plot_tumor_solids`** (`scomv.tumor_solid`): shows the tumor mask with each
+  solid's bounding box and id number. The numbers are drawn as matplotlib text,
+  so they stay sharp at any figure size and dpi (the numbers burnt into
+  `solid.uns["individual_tumor_solid"]` were pixelated). `extract_tumor_solids`
+  now also stores the plain mask image (`solid.uns["tumor_mask_image"]`) and the
+  boxes (`solid.uns["solid_bbox"]`) that it uses; `individual_tumor_solid` is
+  unchanged.
 
 ### Fixes
 
@@ -12,6 +22,7 @@
 
 * Gene-analysis tutorial: removed the GO enrichment run without a background
   gene set; only the run with this panel's genes as background is kept.
+* Tumor-solid tutorial: the solid overview figure uses `plot_tumor_solids`.
 
 ## 0.1.6 (2026-11-21)
 

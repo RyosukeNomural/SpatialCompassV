@@ -7,6 +7,8 @@ Splits the workflow that used to live as a notebook-local
   from the marker delineation image.
 - :func:`extract_tumor_solids` — aggregate gene expression per solid into a
   solid-level AnnData.
+- :func:`plot_tumor_solids` — the tumor mask with each solid's bounding box
+  and id number (numbers drawn as text, so they stay sharp).
 - :func:`assign_solid_ids` — map arbitrary (x, y) points (e.g. individual
   cells) onto a solid label image.
 - :func:`compute_solid_min_vectors` — grid-square subset and per-square
@@ -164,7 +166,10 @@ def extract_tumor_solids(
         One observation per solid. ``.var_names`` = genes, ``.obs`` holds the
         solid centroid (imagecol, imagerow) and solid id,
         ``.uns["individual_tumor_solid"]`` holds the label image annotated
-        with bounding boxes and solid ids, and ``.shortest`` (set via
+        with bounding boxes and solid ids (burnt into the pixels; for a figure
+        use :func:`plot_tumor_solids`, which draws sharp numbers from
+        ``.uns["tumor_mask_image"]`` and ``.uns["solid_bbox"]``), and
+        ``.shortest`` (set via
         ``setattr``) holds the per-grid-square distance table with an added
         "solid" column.
     """
@@ -260,9 +265,82 @@ def extract_tumor_solids(
     solid.var_names = df_solid_mean.columns.tolist()
     solid.obs = df_solid_centroid
     solid.uns["individual_tumor_solid"] = img_color
+    solid.uns["tumor_mask_image"] = grid.uns["marker_delineation"].copy()   # BGR, without boxes / numbers
+    solid.uns["solid_bbox"] = np.asarray(stats[:, :4], dtype=np.int64)      # (x, y, width, height); row = solid id, row 0 = background
     setattr(solid, "shortest", df_shortest)
 
     return solid
+
+
+def plot_tumor_solids(
+    solid,
+    ax=None,
+    figsize: Tuple[float, float] = (10, 8),
+    dpi: int = 150,
+    title: Optional[str] = None,
+    box_color: str = "red",
+    box_linewidth: float = 0.8,
+    id_fontsize: float = 9,
+    id_color: str = "red",
+    id_outline_color: Optional[str] = "white",
+    save_path: Optional[str] = None,
+) -> plt.Axes:
+    """
+    Show the tumor mask with each solid's bounding box and id number.
+
+    Same content as ``solid.uns["individual_tumor_solid"]``, but the boxes and
+    numbers are drawn with matplotlib on top of the mask image instead of being
+    burnt into its pixels, so the numbers stay sharp at any figure size / dpi.
+
+    Parameters
+    ----------
+    solid : AnnData
+        Output of :func:`extract_tumor_solids` (uses ``.uns["tumor_mask_image"]``
+        and ``.uns["solid_bbox"]``).
+    ax : matplotlib.axes.Axes or None
+        Draw into an existing axes instead of creating a new figure.
+    figsize, dpi : figure size and resolution when ``ax`` is None.
+    title : str or None
+        Axes title; default ``"<N> tumor solids"``.
+    box_color, box_linewidth : bounding-box line color and width.
+    id_fontsize, id_color : font size and color of the solid id numbers.
+    id_outline_color : str or None
+        Color of a thin outline around the numbers (keeps them readable on the
+        yellow mask); None for no outline.
+    save_path : str or None
+        If given, save the figure (``fig.savefig(..., dpi=300, bbox_inches="tight")``).
+
+    Returns
+    -------
+    matplotlib.axes.Axes
+    """
+    import matplotlib.patheffects as pe
+
+    if "tumor_mask_image" not in solid.uns or "solid_bbox" not in solid.uns:
+        raise KeyError("solid.uns has no 'tumor_mask_image' / 'solid_bbox'; "
+                       "re-run extract_tumor_solids (scomv >= 0.1.7)")
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize, dpi=dpi)
+    else:
+        fig = ax.figure
+
+    ax.imshow(cv2.cvtColor(np.asarray(solid.uns["tumor_mask_image"]), cv2.COLOR_BGR2RGB), interpolation="nearest")
+    bbox = np.asarray(solid.uns["solid_bbox"])
+    effects = [pe.withStroke(linewidth=2, foreground=id_outline_color)] if id_outline_color else None
+    for sid in range(1, bbox.shape[0]):
+        x, y, w, h = bbox[sid]
+        # pixel (i, j) is centred on (i, j) in imshow coordinates -> box edges at -0.5
+        ax.add_patch(mpatches.Rectangle((x - 0.5, y - 0.5), w, h, fill=False,
+                                        edgecolor=box_color, linewidth=box_linewidth))
+        ax.text(x, y - 1, str(sid), color=id_color, fontsize=id_fontsize, fontweight="bold",
+                ha="left", va="bottom", path_effects=effects)
+    ax.axis("off")
+    # ids of solids touching the top edge sit above the image: keep the title clear of them
+    ax.set_title(title if title is not None else f"{bbox.shape[0] - 1} tumor solids", pad=2 * id_fontsize + 8)
+
+    if save_path is not None:
+        fig.savefig(save_path, dpi=300, bbox_inches="tight")
+    return ax
 
 
 def assign_solid_ids(

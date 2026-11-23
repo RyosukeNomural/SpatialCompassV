@@ -155,3 +155,34 @@ def test_calculate_distance_image_is_pixel_exact():
     yellow = (g.uns["marker"] == np.array([36, 231, 253], np.uint8)).all(axis=2)
     assert g.uns["marker"].shape[:2] == (n_row, n_col)
     assert np.array_equal(yellow, blob.T)
+
+
+def test_plot_tumor_solids_draws_sharp_ids():
+    # two blobs -> two solids; boxes / ids are matplotlib artists, the mask image has no burnt-in text
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    from scomv.preparation.skny_calc_distance import calculate_distance
+    from scomv.tumor_solid import extract_tumor_solids, label_solid_regions, plot_tumor_solids
+    n_row, n_col = 40, 120
+    rng = np.random.default_rng(1)
+    blob = np.zeros((n_col, n_row), bool)
+    blob[10:40, 8:30] = True
+    blob[70:110, 10:32] = True
+    X = np.zeros((n_row * n_col, 1))
+    X[blob.ravel(), 0] = rng.integers(1, 5, blob.sum())
+    obs = pd.DataFrame({"imagecol": np.repeat(np.arange(n_col) * 10 + 5.0, n_row),
+                        "imagerow": np.tile(np.arange(n_row) * 10 + 5.0, n_col)},
+                       index=[f"grid_{i + 1}" for i in range(n_row * n_col)])
+    g = ad.AnnData(X=X, obs=obs, var=pd.DataFrame(index=["CDH1"]))
+    g.uns["grid_xedges"] = np.arange(n_col + 1) * 10.0
+    g.uns["grid_yedges"] = np.arange(n_row + 1) * 10.0
+    g = calculate_distance(g, pos_marker_ls=["CDH1"])
+    solid = extract_tumor_solids(g, min_area=50, verbose=False)
+    _, stats, _ = label_solid_regions(g, min_area=50)
+    assert np.array_equal(solid.uns["tumor_mask_image"], g.uns["marker_delineation"])
+    assert np.array_equal(solid.uns["solid_bbox"], stats[:, :4])
+    ax = plot_tumor_solids(solid)
+    assert [t.get_text() for t in ax.texts] == [str(i) for i in range(1, stats.shape[0])]
+    assert len(ax.patches) == stats.shape[0] - 1
+    plt.close(ax.figure)
