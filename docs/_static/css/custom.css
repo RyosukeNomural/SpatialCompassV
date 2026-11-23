@@ -33,3 +33,11 @@
   background-color: #edf3fb;
 }
 
+
+/* ===== Notebook output tables: scroll horizontally instead of overflowing the page ===== */
+div.cell_output table,
+div.output_area table {
+  display: block;
+  max-width: 100%;
+  overflow-x: auto;
+}
