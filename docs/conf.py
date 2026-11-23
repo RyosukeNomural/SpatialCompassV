@@ -28,6 +28,9 @@ extensions = [
 
 nb_execution_mode = "off"
 
+# render $...$ / $$...$$ math in notebook markdown (MathJax)
+myst_enable_extensions = ["dollarmath", "amsmath"]
+
 # source_suffix = {
      #".rst": "restructuredtext",
     # ".md": "markdown",
