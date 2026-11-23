@@ -34,6 +34,15 @@ Main Features
 
       **Gene Distribution Clustering**
 
+   .. grid-item-card::
+      :link: tutorials/atera_analysis
+      :text-align: center
+
+      .. image:: _static/images/atera_analysis.png
+         :width: 220px
+
+      **Whole-Transcriptome Tumor Analysis**
+
 
 
  

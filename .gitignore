@@ -227,3 +227,7 @@ docs/tutorials/spatial_deg/index_broken.ipynb
 
 # SpatialCompass webapp credentials (contains hashed passwords)
 webapp/auth.yaml
+
+# Atera WTA tutorial: local data links and results (large, not committed)
+docs/tutorials/tutorial_data/atera_wta/
+docs/tutorials/atera_analysis/atera_results/
