@@ -207,3 +207,49 @@ def test_other_solid_squares_include_lumens():
     assert not got & {(x, y) for x, y in idx if lab[y, x] == 1}
     # for solid 2 itself: only solid 1 is "other"
     assert _other_solid_squares(solid, 2) == {(x, y) for x, y in idx if lab[y, x] == 1}
+
+
+def _random_polar_hists(n_genes, seed=0, shape=(46, 12)):
+    rng = np.random.default_rng(seed)
+    out = []
+    for _ in range(n_genes):
+        h = rng.random(shape) * (rng.random(shape) < 0.3)
+        h[:3] = 0                                     # polar cells empty for every gene
+        out.append(h / h.sum())
+    return out
+
+
+def test_minas_similarity_matches_loop():
+    from scomv.gene_pipeline import SCOMVPipeline
+    hists = _random_polar_hists(60)
+    labels = [f"g{i}" for i in range(60)]
+    ref = np.zeros((60, 60))
+    for i in range(60):
+        for j in range(i, 60):
+            ref[i, j] = ref[j, i] = float(np.minimum(hists[i], hists[j]).sum())
+    sim = SCOMVPipeline.minas_similarity_matrix(hists, labels, make_distance=False, fill_diagonal_zero=False)
+    np.testing.assert_allclose(sim.values, ref, rtol=0, atol=1e-14)
+    dist = SCOMVPipeline.minas_similarity_matrix(hists, labels)
+    ref_d = 1.0 - ref
+    np.fill_diagonal(ref_d, 0.0)
+    np.testing.assert_allclose(dist.values, ref_d, rtol=0, atol=1e-14)
+    assert list(dist.index) == labels and list(dist.columns) == labels
+
+
+def test_pcoa_top_matches_skbio_full():
+    import skbio
+    from skbio.stats.ordination import pcoa
+    from scomv.gene_pipeline import SCOMVPipeline
+    hists = _random_polar_hists(300, seed=1)
+    labels = [f"g{i}" for i in range(300)]
+    dist = SCOMVPipeline.minas_similarity_matrix(hists, labels)
+    full = pcoa(skbio.DistanceMatrix(dist.values, ids=labels))
+    res, coords, expl = SCOMVPipeline.run_pcoa_from_distance_df(dist, dimensions=10)
+    np.testing.assert_allclose(res.eigvals.values, full.eigvals.values[:10], rtol=1e-9)
+    for c in coords.columns:
+        a, b = coords[c].values, full.samples[c].values
+        np.testing.assert_allclose(a * np.sign(a @ b), b, rtol=0, atol=1e-9)
+    # small matrices still go through skbio's full decomposition
+    res2, coords2, expl2 = SCOMVPipeline.run_pcoa_from_distance_df(dist)
+    pd.testing.assert_frame_equal(coords2, full.samples)
+    pd.testing.assert_series_equal(expl2, full.proportion_explained)

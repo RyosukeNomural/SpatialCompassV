@@ -44,6 +44,21 @@
   `region` / `region_10` columns that `extract_roi` needs (the block the
   tutorials built by hand).
 
+### Faster
+
+* **Gene x gene steps for whole-transcriptome panels.**
+  `SCOMVPipeline.minas_similarity_matrix` computes the histogram intersection
+  of all gene pairs with a parallel numba kernel (same numbers up to
+  floating-point summation order, < 1e-14), and
+  `SCOMVPipeline.run_pcoa_from_distance_df` computes only the leading 10 axes
+  (ARPACK) when there are more than 3,000 genes (`full_max_n`) or when
+  `dimensions=` is given: same eigenvalues and coordinates as the full
+  decomposition (each axis up to its sign), with `proportion_explained`
+  relative to the trace of the centred matrix (as skbio's `method="fsvd"`).
+  Up to 3,000 genes the PCoA is skbio's full decomposition as before, so
+  results for targeted panels are unchanged. On the Xenium WTA breast sample
+  (17,878 genes) the two steps take ~10 s instead of ~11 min.
+
 ### Changes that affect results (only with `mask_other_solids=True`)
 
 * **Other tumors are masked completely.** `mask_other_solids=True`
