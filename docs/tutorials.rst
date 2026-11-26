@@ -46,3 +46,14 @@ Main Features
 
 
  
+Analysis Recipes
+----------------
+
+.. toctree::
+   :maxdepth: 1
+
+   tutorials/signature_analysis/index
+   tutorials/gap_infiltration/index
+   tutorials/gene_clustering/index
+   tutorials/solid_gene_clustering/index
+   tutorials/solid_cell_clustering/index
