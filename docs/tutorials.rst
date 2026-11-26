@@ -34,14 +34,6 @@ Main Features
 
       **Gene Distribution Clustering**
 
-   .. grid-item-card::
-      :link: tutorials/atera_analysis
-      :text-align: center
-
-      .. image:: _static/images/atera_analysis.png
-         :width: 220px
-
-      **Whole-Transcriptome ST Analysis (Atera)**
 
 
 
@@ -49,11 +41,50 @@ Main Features
 Analysis Recipes
 ----------------
 
-.. toctree::
-   :maxdepth: 1
+.. grid:: 1 2 3 3
+   :gutter: 3
 
-   tutorials/signature_analysis/index
-   tutorials/gap_infiltration/index
-   tutorials/gene_clustering/index
-   tutorials/solid_gene_clustering/index
-   tutorials/solid_cell_clustering/index
+   .. grid-item-card::
+      :link: tutorials/signature_analysis
+      :text-align: center
+
+      .. image:: _static/images/signature_analysis.png
+         :width: 220px
+
+      **Gene Signatures around the Tumor**
+
+   .. grid-item-card::
+      :link: tutorials/gap_infiltration
+      :text-align: center
+
+      .. image:: _static/images/gap_infiltration.png
+         :width: 220px
+
+      **Gap Infiltration Score (PGI)**
+
+   .. grid-item-card::
+      :link: tutorials/gene_clustering
+      :text-align: center
+
+      .. image:: _static/images/gene_clustering.png
+         :width: 220px
+
+      **Gene Clustering Step by Step**
+
+   .. grid-item-card::
+      :link: tutorials/solid_gene_clustering
+      :text-align: center
+
+      .. image:: _static/images/solid_gene_clustering.png
+         :width: 220px
+
+      **Tumor Grouping by Gene Uniformity**
+
+   .. grid-item-card::
+      :link: tutorials/solid_cell_clustering
+      :text-align: center
+
+      .. image:: _static/images/solid_cell_clustering.png
+         :width: 220px
+
+      **Tumor Grouping by Selected Cell Types**
