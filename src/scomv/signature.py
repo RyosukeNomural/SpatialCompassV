@@ -104,6 +104,15 @@ class PolarROI:
     def n_squares(self) -> int:
         return self.subset_grid.n_obs
 
+    def histogram(self, weights, radius_bins=None, angle_bins_deg=None) -> np.ndarray:
+        """Polar histogram (radius x angle) of any non-negative per-square weights, normalised like the per-gene
+        SCOMV histograms (sum over the squares with a vector = 1). Default bins: -150..300 µm by 10 x 30°."""
+        rb = np.arange(-150, 310, 10) if radius_bins is None else np.asarray(radius_bins)
+        ab = np.arange(-180, 181, ANGLE_STEP) if angle_bins_deg is None else np.asarray(angle_bins_deg)
+        w = np.asarray(weights, float)
+        M, has_vec = polar_weight_matrix(self.min_vector_df, rb, ab, self.bin_size, n_rows=self.n_squares)
+        return np.asarray(M.T @ w).reshape(len(rb) - 1, len(ab) - 1) / w[has_vec].sum()
+
 
 def as_polar_roi(obj) -> PolarROI:
     """A ``PolarROI`` from a ``PolarROI``, a run ``SCOMVPipeline`` or a ``(subset_grid, min_vector_df)`` pair."""
@@ -258,6 +267,15 @@ class SignatureEnrichment:
     scorer: Optional[SignatureScorer] = None
     vec_cell: Optional[np.ndarray] = None                   # polar cell of every shortest vector (-1 = none)
     vec_row: Optional[np.ndarray] = None
+    polar_matrix: Any = None                                # squares x polar cells (tie weights)
+
+    def log2e_of(self, weights, tissue_weights=None) -> np.ndarray:
+        """log2 E map of any per-square weights (n_squares,) or (n_squares, B) with the same polar cells, tested cells
+        and baseline as this result (``tissue_weights``: other per-square baseline weights, e.g. a bootstrap)."""
+        M = self.polar_matrix
+        S = np.asarray(M.T @ np.asarray(weights, float))
+        T = self.tissue_hist if tissue_weights is None else np.asarray(M.T @ np.asarray(tissue_weights, float))
+        return _log2_enrichment(S, T, self.valid_cell)
 
     @property
     def names(self) -> List[str]:
@@ -322,6 +340,20 @@ class SignatureEnrichment:
 
 
 _CATEGORY_OF = {h: c for c, hs in HALLMARK_CATEGORY.items() for h in hs}
+
+
+def _log2_enrichment(S_hist, T_hist, valid):
+    """log2 (S share / T share) over the valid cells; S_hist (cells,) or (cells, B), T_hist (cells,) or same shape."""
+    S_hist = np.asarray(S_hist, float)
+    T = np.asarray(T_hist, float)
+    if S_hist.ndim == 2 and T.ndim == 1:
+        T = T[:, None]
+    v = valid if S_hist.ndim == 1 else valid[:, None]
+    eps = 1e-3 / max(valid.sum(), 1)
+    with np.errstate(invalid="ignore", divide="ignore"):
+        share_s = S_hist / np.where(v, S_hist, 0).sum(axis=0)
+        share_t = T / np.where(v, T, 0).sum(axis=0)
+        return np.where(v, np.log2((share_s + eps) / (share_t + eps)), np.nan)
 
 
 def signature_polar_enrichment(
@@ -394,16 +426,9 @@ def signature_polar_enrichment(
     tissue = scorer.tissue
     tissue_hist = np.asarray(M.T @ tissue.astype(float)).ravel()
     valid = tissue_hist >= min_tissue_squares
-    eps = 1e-3 / max(valid.sum(), 1)
 
     def log2e(S_hist):
-        S_hist = np.asarray(S_hist, float)
-        T = tissue_hist if S_hist.ndim == 1 else tissue_hist[:, None]
-        v = valid if S_hist.ndim == 1 else valid[:, None]
-        share_s = S_hist / np.where(v, S_hist, 0).sum(axis=0)
-        share_t = T / np.where(v, T, 0).sum(axis=0)
-        with np.errstate(invalid="ignore", divide="ignore"):
-            return np.where(v, np.log2((share_s + eps) / (share_t + eps)), np.nan)
+        return _log2_enrichment(S_hist, tissue_hist, valid)
 
     ZT = np.ascontiguousarray(scorer.Z.T)              # panel x squares
     n_panel = len(scorer.panel)
@@ -442,7 +467,7 @@ def signature_polar_enrichment(
         print(f"{len(names)} signature(s) x {n_perm:,} permutations, {int(valid.sum())} / {valid.size} polar cells "
               f"tested ({time.time() - t0:.0f} s)" + (f"; skipped (< {min_set_genes} panel genes): {dropped}" if dropped else ""))
     return SignatureEnrichment(sets, L, Zs, P, Q, dict(zip(names, qg)), r_edges, a_edges, include_inside,
-                               tissue_hist, valid, fdr, n_perm, dropped, roi, scorer, vec_cell, vec_row)
+                               tissue_hist, valid, fdr, n_perm, dropped, roi, scorer, vec_cell, vec_row, M)
 
 
 # ===================================================================================================== Hallmark
@@ -515,9 +540,9 @@ def plot_signature_polar(res: SignatureEnrichment, names: Optional[Sequence[str]
         vmax = max(float(np.ceil(np.nanpercentile(v, 98) * 4) / 4), 0.25)
     ncols = min(ncols, len(names))
     nrows = int(np.ceil(len(names) / ncols))
-    fig, axes = plt.subplots(nrows, ncols, figsize=(panel_size * ncols * 1.1, panel_size * nrows * 1.25 + 1.0),
+    fig, axes = plt.subplots(nrows, ncols, figsize=(panel_size * ncols * 1.1, panel_size * nrows * 1.02 + 0.8),
                              subplot_kw={"projection": "polar"}, squeeze=False,
-                             gridspec_kw={"hspace": 0.55, "wspace": 0.45})
+                             gridspec_kw={"hspace": 0.42, "wspace": 0.45})
     for ax, n in zip(axes.ravel(), names):
         mesh = _plot_one(ax, res, n, vmax, q_key, "\n".join(textwrap.wrap(n.replace("_", " "), wrap)))
         ax.title.set_y(1.12)
@@ -570,18 +595,18 @@ def signature_polar_histogram(roi, genes: Sequence[str], *, radius_bins=None, sc
     genes = [g for g in genes if g in scorer.gene_pos]
     if not genes:
         raise ValueError("none of the genes is in the panel")
-    s = scorer.score(genes)
-    M, has_vec = polar_weight_matrix(roi.min_vector_df, radius_bins, a_edges, roi.bin_size, n_rows=roi.n_squares)
-    return np.asarray(M.T @ s).reshape(len(radius_bins) - 1, -1) / s[has_vec].sum()
+    return roi.histogram(scorer.score(genes), radius_bins, a_edges)
 
 
 def plot_signature_backprojection(res: SignatureEnrichment, name: str, *, q_key: str = "q", point_size: float = 70,
-                                  outline_size: float = 25, figsize=(26, 12)):
+                                  outline_size: float = 25, figsize=(26, 12), cbar_fontsize: float = 30,
+                                  cbar_tick_fontsize: float = 24, title_fontsize: float = 29):
     """Where on the tissue the polar enrichment of ``name`` comes from.
 
     Left: signature score of every grid square (tumor squares dark grey, boundary black). Right: the squares whose
     shortest vector falls in a significant polar cell, coloured by that cell's log2 E. Needs square positions
-    (``PolarROI`` from a ``SCOMVPipeline``). Returns the figure.
+    (``PolarROI`` from a ``SCOMVPipeline``). ``cbar_fontsize`` / ``cbar_tick_fontsize`` / ``title_fontsize``:
+    colour-bar label / tick and panel-title sizes. Returns the figure.
     """
     from matplotlib.colors import TwoSlopeNorm
     roi = res.roi
@@ -603,17 +628,18 @@ def plot_signature_backprojection(res: SignatureEnrichment, name: str, *, q_key:
         sc_ = axes[0].scatter(xy[m, 0], xy[m, 1], c=score[m], cmap="Reds", s=point_size, linewidths=0,
                               vmin=0, vmax=np.percentile(score[m], 99))
         cb = fig.colorbar(sc_, ax=axes[0], fraction=0.04)
-        cb.set_label("Signature score", fontsize=20)
-        cb.ax.tick_params(labelsize=16)
-    axes[0].set_title(f"{name}: score", fontsize=22, weight="bold")
+        cb.set_label("Signature score", fontsize=cbar_fontsize)
+        cb.ax.tick_params(labelsize=cbar_tick_fontsize)
+    axes[0].set_title(f"{name}: score", fontsize=title_fontsize, weight="bold")
     if len(cell_val):
         vmax = max(float(np.abs(cell_val).max()), 1e-6)
         sc2 = axes[1].scatter(xy[cell_val.index, 0], xy[cell_val.index, 1], c=cell_val.values, cmap="RdBu_r",
                               norm=TwoSlopeNorm(0, -vmax, vmax), s=point_size, linewidths=0)
         cb2 = fig.colorbar(sc2, ax=axes[1], fraction=0.04)
-        cb2.set_label(r"$\log_2 E$ of the polar cell", fontsize=20)
-        cb2.ax.tick_params(labelsize=16)
-    axes[1].set_title(f"{name}: significant polar cells ({q_key} < {res.fdr})", fontsize=22, weight="bold")
+        cb2.set_label(r"$\log_2 E$ of the polar cell", fontsize=cbar_fontsize)
+        cb2.ax.tick_params(labelsize=cbar_tick_fontsize)
+    axes[1].set_title(f"{name}: significant polar cells ({q_key} < {res.fdr})", fontsize=title_fontsize,
+                      weight="bold")
     for ax in axes:
         if roi.outline is not None:
             ax.scatter(roi.outline[:, 0], roi.outline[:, 1], c="black", s=outline_size, linewidths=0)
