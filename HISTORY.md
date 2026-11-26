@@ -11,6 +11,38 @@
   now also stores the plain mask image (`solid.uns["tumor_mask_image"]`) and the
   boxes (`solid.uns["solid_bbox"]`) that it uses; `individual_tumor_solid` is
   unchanged.
+* **Gene signatures around the tumor** (`scomv.signature`):
+  `signature_polar_enrichment` maps a gene list (or several, as a dict) in the
+  polar space: per-square signature score (normalise, log1p, z-score, mean of
+  the member genes), log2 enrichment per polar cell relative to the tissue
+  (30° sectors; outer radius `r_max` and ring width `r_step` selectable;
+  `include_inside=True` adds the tumor as one cell) and a permutation test
+  against decile-matched random gene sets (BH within each signature `q` and
+  across all signatures x cells `q_global`). `hallmark_polar_enrichment` runs
+  all MSigDB Hallmark sets (`load_hallmark_gene_sets`, cached JSON);
+  `plot_signature_polar`, `plot_significant_hallmarks` (only the sets with a
+  significant cell, optionally by Hallmark category) and
+  `plot_signature_backprojection` draw the results. Works on a run
+  `SCOMVPipeline` or on one tumor solid (`PolarROI.from_solid`).
+* **Gap infiltration score for any reference gene** (`scomv.pgi`):
+  `compute_pgi(gene_pipe, ref_gene=...)` (POSTN by default) ranks the genes
+  concentrated in the stromal sectors where the reference gene is thin (PGI,
+  rotation z, mutual-exclusion coefficient); `plot_pgi_ranking`,
+  `plot_pgi_polar`.
+* **Gene clustering step by step** (`scomv.gene_clustering`):
+  `compute_gene_features` (PCoA, uniformity, inside/outside density ratio A),
+  `cluster_genes_two_stage` (internal genes by PCoA + A, the rest by
+  PCoA + uniformity), `plot_gene_clusters`, `cluster_mean_maps` /
+  `plot_cluster_mean_polar` / `plot_cluster_presence` and
+  `cluster_enrichment` (GO per cluster).
+* **Grouping tumor solids** (`scomv.solid_clustering`):
+  `solid_gene_uniformity` (distance-weighted uniformity of any genes around
+  every solid, size-factor corrected by default), `solid_cell_uniformity` (the
+  same for the selected cell types), `cluster_solids` (Gaussian mixture with k
+  by BIC, or Ward; any subset of the columns) and `plot_solid_clusters`.
+* **`add_distance_regions`** (`scomv.preparation.choose_roi`): adds the
+  `region` / `region_10` columns that `extract_roi` needs (the block the
+  tutorials built by hand).
 
 ### Changes that affect results (only with `mask_other_solids=True`)
 
@@ -35,6 +67,11 @@
 * Gene-analysis tutorial: removed the GO enrichment run without a background
   gene set; only the run with this panel's genes as background is kept.
 * Tumor-solid tutorial: the solid overview figure uses `plot_tumor_solids`.
+* Gene-analysis, tumor-solid and cell-analysis tutorials: repeated computation
+  and plotting code replaced by the new functions (same results). The
+  gene-analysis Hallmark maps now use 30° sectors (previously 45°).
+* New tutorials: signature_analysis, gap_infiltration, gene_clustering,
+  solid_gene_clustering and solid_cell_clustering.
 
 ## 0.1.6 (2026-11-21)
 
