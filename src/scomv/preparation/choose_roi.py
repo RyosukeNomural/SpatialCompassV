@@ -246,3 +246,32 @@ def contour_regions(
 
 
 __all__ = ["extract_roi", "contour_regions"]
+
+
+def add_distance_regions(grid, scale: float = 10, drop: Tuple[str, ...] = ("(-150, -120]",)):
+    """
+    Attach the SKNY distance band of every grid square to ``grid.obs`` (columns ``region`` and ``region_10``,
+    the latter in µm, e.g. "(0, 10]"), as needed by :func:`extract_roi` / ``SCOMVPipeline.run``.
+
+    Same result as the block used in the tutorials (``grid.shortest["region"]`` reshaped to the grid, joined on
+    the square names). Bands listed in ``drop`` are set to NaN (the innermost band has very few squares).
+    Modifies ``grid`` in place and returns it.
+    """
+    from .grid_index import grid_index_names, grid_shape
+
+    n_row, n_col = grid_shape(grid)
+    names = grid_index_names(grid)
+    df_region = pd.DataFrame(
+        np.array(grid.shortest["region"]).reshape(n_row, n_col).T.reshape(n_row * n_col),
+        index=names, columns=["region"],
+    )
+    obs = grid.obs.drop(columns=[c for c in ("region", "region_10") if c in grid.obs.columns])
+    grid.obs = pd.merge(obs, df_region.dropna(), right_index=True, left_index=True, how="left")
+    reg = [str(i * scale) for i in grid.obs["region"]]
+    grid.obs["region_10"] = [
+        "(" + str(int(float(i.split(", ")[0][1:]))) + ", " + str(int(float(i.split(", ")[-1][:-1]))) + "]"
+        if i != "nan" else np.nan
+        for i in reg
+    ]
+    grid.obs["region_10"] = grid.obs["region_10"].replace({d: np.nan for d in drop})
+    return grid

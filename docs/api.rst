@@ -27,3 +27,23 @@ Modules
    :undoc-members:
    :show-inheritance:
 
+
+.. automodule:: scomv.signature
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: scomv.pgi
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: scomv.gene_clustering
+   :members:
+   :undoc-members:
+   :show-inheritance:
+
+.. automodule:: scomv.solid_clustering
+   :members:
+   :undoc-members:
+   :show-inheritance:
