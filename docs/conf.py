@@ -46,7 +46,7 @@ copybutton_selector = "div:not(.output) > div.highlight pre"
 
 autosummary_generate = True
 
-exclude_patterns = ["tutorials/atera_analysis/**"]   # hidden for now (notebook kept in the repo)
+exclude_patterns = []
 
 
 
