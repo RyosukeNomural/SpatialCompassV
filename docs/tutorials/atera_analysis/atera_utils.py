@@ -150,6 +150,96 @@ def cells_outside_other_solids(x, y, grid, solid, solid_id):
     return ~_in_squares(gi, gj, _other_solid_squares(solid, solid_id))
 
 
+# ---------------------------------------------------------------- reference geometry (hole filling)
+def reference_solids(solid, max_hole_area_um2=None, bin_size_um=10):
+    """Solids with small enclosed holes filled, for the distance / angle calculation only.
+
+    SKNY decides *where* the tumor is (``solid``, unchanged). This builds a separate reference
+    geometry from it: for every solid, the holes it encloses whose area is <= ``max_hole_area_um2``
+    are filled, unless the hole contains (part of) another solid. Holes are 4-connected background
+    components, as in ``scipy.ndimage.binary_fill_holes``.
+
+    The returned copy carries a rebuilt ``.shortest`` in which, for every solid square of the
+    reference geometry:
+
+    * ``solid`` = its solid id (every square of the solid, at any depth),
+    * ``euclidean`` = 0 on the reference boundary (squares of the solid with a 4-neighbour outside it,
+      i.e. the outer edge and the edge of every hole that is kept), and minus the Euclidean distance
+      (grid squares) to the nearest boundary square inside it.
+
+    Everything downstream keeps its rules (outline = -1 <= euclidean <= 0, inside = euclidean < -1),
+    so only the geometry changes. Squares outside every solid keep their original row. Cell types,
+    expression and the original ``solid`` object are not modified.
+
+    ``max_hole_area_um2=None`` returns ``solid`` itself (the original SKNY geometry, unchanged).
+    Use ``np.inf`` to fill every hole that holds no other solid.
+
+    Returns (solid_ref, table): ``table`` has one row per solid with the number / area of the holes
+    found and filled, the added area and the maximum / median / 90th-percentile interior depth (µm).
+    The settings are stored in ``solid_ref.uns["reference_geometry"]``.
+    """
+    from scipy import ndimage
+
+    if max_hole_area_um2 is None:
+        return solid, None
+    lab = np.asarray(solid.uns["solid_labels"], dtype=np.int64)
+    H, W = lab.shape
+    ref = lab.copy()
+    max_sq = float(max_hole_area_um2) / bin_size_um ** 2
+    ids = sorted(int(s) for s in solid.obs["solid"])
+    sh = solid.shortest
+    E = sh["euclidean"].to_numpy(dtype=float).copy()
+    S = sh["solid"].to_numpy().copy()
+    assert len(E) == H * W, "solid.shortest is not the full grid (row = y * W + x expected)"
+    cross = ndimage.generate_binary_structure(2, 1)
+    rows = []
+    for sid in ids:
+        yy, xx = np.nonzero(lab == sid)
+        y0, y1, x0, x1 = yy.min(), yy.max() + 1, xx.min(), xx.max() + 1
+        sl = (slice(y0, y1), slice(x0, x1))
+        m = lab[sl] == sid
+        holes = ndimage.binary_fill_holes(m) & ~m
+        hl, n_holes = ndimage.label(holes, structure=cross)
+        area = np.bincount(hl.ravel(), minlength=n_holes + 1)[1:]
+        has_other = np.bincount(hl.ravel(), weights=((lab[sl] > 0) & ~m).ravel(), minlength=n_holes + 1)[1:] > 0
+        fill = (area <= max_sq) & ~has_other
+        mref = m | np.isin(hl, np.flatnonzero(fill) + 1)
+        ref[sl][mref] = sid
+        # boundary = squares of the reference solid with a 4-neighbour outside it (image edge = outside)
+        pad = np.pad(mref, 1)
+        inner = ndimage.binary_erosion(pad, structure=cross)[1:-1, 1:-1]
+        boundary = mref & ~inner
+        depth = ndimage.distance_transform_edt(np.pad(~boundary, 1, constant_values=True))[1:-1, 1:-1]
+        e = np.where(boundary, 0.0, -depth)
+        ys, xs = np.nonzero(mref)
+        flat = (ys + y0) * W + (xs + x0)
+        E[flat] = e[ys, xs]
+        S[flat] = sid
+        d_um = -e[mref & ~boundary] * bin_size_um
+        d_orig = -e[m & ~boundary] * bin_size_um
+        rows.append(dict(
+            solid=sid, area_um2=int(m.sum()) * bin_size_um ** 2, holes=int(n_holes),
+            hole_area_um2=int(area.sum()) * bin_size_um ** 2, holes_filled=int(fill.sum()),
+            holes_with_other_solid=int(has_other.sum()),
+            added_um2=int(area[fill].sum()) * bin_size_um ** 2,
+            area_increase=float(area[fill].sum() / m.sum()),
+            boundary_squares=int(boundary.sum()), inside_squares=int(((e < -1) & mref).sum()),
+            depth_max_um=float(d_um.max()) if d_um.size else 0.0,
+            depth_median_um=float(np.median(d_um)) if d_um.size else 0.0,
+            depth_p90_um=float(np.percentile(d_um, 90)) if d_um.size else 0.0,
+            depth_max_um_original_squares=float(d_orig.max()) if d_orig.size else 0.0))
+    sh_ref = sh.copy()
+    sh_ref["euclidean"] = E
+    sh_ref["solid"] = S
+    solid_ref = solid.copy()
+    solid_ref.uns["solid_labels"] = ref.astype(np.int32)
+    solid_ref.uns["reference_geometry"] = dict(max_hole_area_um2=float(max_hole_area_um2),
+                                               bin_size_um=bin_size_um, boundary="outer edge + kept holes",
+                                               outline_rule="-1 <= euclidean <= 0", inside_rule="euclidean < -1")
+    setattr(solid_ref, "shortest", sh_ref)
+    return solid_ref, pd.DataFrame(rows).set_index("solid")
+
+
 # ---------------------------------------------------------------- gene uniformity
 def _hist_bin_index(x, edges):
     """Bin index exactly as np.histogram2d (right edge of the last bin inclusive); -1 = outside."""
