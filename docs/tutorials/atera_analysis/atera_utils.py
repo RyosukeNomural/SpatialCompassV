@@ -9,6 +9,7 @@ memory-bound, so they are re-implemented here with identical semantics:
 * ``solid_min_vectors`` - same output as ``scomv.tumor_solid.compute_solid_min_vectors``
   (vectorised binning instead of ``DataFrame.apply``), returning the row mask so
   that the sparse all-gene matrix can be subset in the same order.
+  With ``mask_other_solids=True`` the squares of the other solids are left out of the ROI.
 * ``gene_uniformity_matrix`` - same numbers as
   ``scomv.tumor_solid.compute_gene_uniformity`` for one solid, for all genes at
   once (sparse matrix products instead of a per-gene / per-bin Python loop).
@@ -23,6 +24,7 @@ import scipy.sparse as sp
 import anndata as ad
 
 from scomv.preparation.scomv_calc_vector import compute_min_vectors_polar, flatten_min_vectors
+from scomv.tumor_solid import _other_solid_squares
 
 
 # ---------------------------------------------------------------- grid
@@ -90,8 +92,12 @@ def with_genes(grid, G, var_names, genes):
 
 
 # ---------------------------------------------------------------- min vectors
-def solid_min_vectors(grid, solid, solid_id, bin_size=10, margin_bins=15):
-    """Same as scomv.tumor_solid.compute_solid_min_vectors; returns (row_mask, min_vector_df, roi)."""
+def solid_min_vectors(grid, solid, solid_id, bin_size=10, margin_bins=15, mask_other_solids=False):
+    """Same as scomv.tumor_solid.compute_solid_min_vectors; returns (row_mask, min_vector_df, roi).
+
+    ``mask_other_solids=True`` drops the grid squares of every other solid (and the lumens
+    they enclose) from the ROI, exactly like the package option of the same name.
+    """
     df_sh = getattr(solid, "shortest")
     df_int = df_sh[(df_sh["solid"] == solid_id) & df_sh["euclidean"].notna()]
     if len(df_int) == 0:
@@ -105,6 +111,8 @@ def solid_min_vectors(grid, solid, solid_id, bin_size=10, margin_bins=15):
     from scomv.preparation.grid_index import grid_square_ij
     gx, gy = grid_square_ij(grid)
     mask = (gx >= xmin_b) & (gx <= xmax_b) & (gy >= ymin_b) & (gy <= ymax_b)
+    if mask_other_solids:
+        mask &= ~_in_squares(gx, gy, _other_solid_squares(solid, solid_id))
     if not mask.any():
         raise ValueError(f"solid_id={solid_id}: empty subset_grid")
     xy_list = list(zip(gx[mask].tolist(), gy[mask].tolist()))
@@ -119,6 +127,27 @@ def solid_min_vectors(grid, solid, solid_id, bin_size=10, margin_bins=15):
     roi = ((xmin_b - 1) * bin_size, (xmax_b + 2) * bin_size,
            (ymin_b - 1) * bin_size, (ymax_b + 2) * bin_size)
     return mask, mv, roi
+
+
+def _in_squares(gx, gy, squares):
+    """Boolean array: is (gx[i], gy[i]) one of ``squares`` (a set of (x_bin, y_bin))?"""
+    if not squares:
+        return np.zeros(len(gx), dtype=bool)
+    sq = np.array(list(squares), dtype=np.int64)
+    w = int(max(sq[:, 0].max(), np.max(gx)) + 1)
+    keys = np.asarray(gy, dtype=np.int64) * w + np.asarray(gx, dtype=np.int64)
+    return np.isin(keys, sq[:, 1] * w + sq[:, 0])
+
+
+def cells_outside_other_solids(x, y, grid, solid, solid_id):
+    """Boolean array over cells: True unless the cell's grid square lies inside another solid.
+
+    Same squares as ``solid_min_vectors(..., mask_other_solids=True)`` and the cell filter of
+    ``scomv.tumor_solid.compute_per_solid_polar_counts(..., mask_other_solids=True)``.
+    """
+    from scomv.preparation.grid_index import points_to_grid_ij
+    gi, gj = points_to_grid_ij(np.asarray(x), np.asarray(y), grid)
+    return ~_in_squares(gi, gj, _other_solid_squares(solid, solid_id))
 
 
 # ---------------------------------------------------------------- gene uniformity
